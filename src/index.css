@@ -1,14 +1,6 @@
-@import "tailwindcss";
-
-@theme {
-  --color-primary: #A68463;
-  --color-background-light: #F9F7F2;
-  --color-background-dark: #121212;
-  --color-accent: #A68463;
-  
-  --font-sans: 'Inter', sans-serif;
-  --font-display: 'Instrument Serif', serif;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 .hero-gradient {
   background: radial-gradient(circle at center, rgba(166, 132, 99, 0.1) 0%, transparent 70%);
