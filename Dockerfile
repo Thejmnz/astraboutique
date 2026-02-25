@@ -1,4 +1,6 @@
-FROM node:20-alpine as build
+FROM node:20-slim as build
+
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
