@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { ArrowLeft, Minus, Plus, Heart, Truck, RefreshCw, Shield, Shirt } from 'lucide-react'
 
 const products = [
   {
@@ -132,8 +133,6 @@ export default function ProductPage() {
   const [selectedColor, setSelectedColor] = useState('')
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
-  const [sizeType, setSizeType] = useState('CO')
-
   const sizeMap = {
     '4': '0',
     '6': '2',
@@ -145,7 +144,7 @@ export default function ProductPage() {
   }
 
   const getSizeLabel = (size) => {
-    return sizeType === 'US' ? sizeMap[size] : size
+    return sizeMap[size]
   }
 
   if (!product) {
@@ -164,7 +163,7 @@ export default function ProductPage() {
       alert('Por favor selecciona una talla')
       return
     }
-    const sizeLabel = sizeType === 'US' ? `${sizeMap[selectedSize]} US` : `${selectedSize} CO`
+    const sizeLabel = `${sizeMap[selectedSize]} US`
     alert(`Agregado al carrito: ${product.name} - Talla: ${sizeLabel} - Cantidad: ${quantity}`)
   }
 
@@ -172,7 +171,7 @@ export default function ProductPage() {
     <div className="min-h-screen bg-background-light pt-8 pb-16">
       <div className="max-w-7xl mx-auto px-6">
         <Link to="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-primary mb-8 text-sm">
-          <span className="material-icons-outlined text-sm">arrow_back</span>
+          <ArrowLeft size={14} strokeWidth={0.75} />
           Volver
         </Link>
         
@@ -218,27 +217,7 @@ export default function ProductPage() {
             </p>
             
             <div className="mb-6">
-              <div className="flex items-center gap-3 mb-3">
-                <h3 className="text-sm font-semibold tracking-widest uppercase">Talla</h3>
-                <div className="flex items-center gap-1 bg-gray-100 rounded-full p-1">
-                  <button
-                    onClick={() => { setSizeType('CO'); setSelectedSize('') }}
-                    className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                      sizeType === 'CO' ? 'bg-primary text-white' : 'text-gray-500 hover:text-primary'
-                    }`}
-                  >
-                    CO
-                  </button>
-                  <button
-                    onClick={() => { setSizeType('US'); setSelectedSize('') }}
-                    className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                      sizeType === 'US' ? 'bg-primary text-white' : 'text-gray-500 hover:text-primary'
-                    }`}
-                  >
-                    US
-                  </button>
-                </div>
-              </div>
+              <h3 className="text-sm font-semibold tracking-widest uppercase mb-3">Talla</h3>
               <div className="flex flex-wrap gap-2">
                 {product.sizes.map((size) => (
                   <button
@@ -279,18 +258,18 @@ export default function ProductPage() {
               <h3 className="text-sm font-semibold tracking-widest uppercase mb-3">Cantidad</h3>
               <div className="flex items-center gap-4">
                 <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center hover:border-primary transition-colors"
-                >
-                  <span className="material-icons-outlined text-sm">remove</span>
-                </button>
-                <span className="text-lg font-medium w-8 text-center">{quantity}</span>
-                <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center hover:border-primary transition-colors"
-                >
-                  <span className="material-icons-outlined text-sm">add</span>
-                </button>
+                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                   className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center hover:border-primary transition-colors"
+                 >
+                   <Minus size={14} strokeWidth={0.75} />
+                 </button>
+                 <span className="text-lg font-medium w-8 text-center">{quantity}</span>
+                 <button
+                   onClick={() => setQuantity(quantity + 1)}
+                   className="w-10 h-10 rounded-lg border border-gray-200 flex items-center justify-center hover:border-primary transition-colors"
+                 >
+                   <Plus size={14} strokeWidth={0.75} />
+                 </button>
               </div>
             </div>
             
@@ -302,29 +281,29 @@ export default function ProductPage() {
                 AGREGAR AL CARRITO
               </button>
               <button className="w-14 h-14 border-2 border-gray-200 rounded-full flex items-center justify-center hover:border-primary hover:text-primary transition-all">
-                <span className="material-icons-outlined">favorite_border</span>
+                <Heart size={20} strokeWidth={0.75} />
               </button>
             </div>
             
             <div className="mt-8 pt-8 border-t border-gray-200">
               <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <span className="material-icons-outlined text-primary">local_shipping</span>
-                  Envío gratis +$150.000
-                </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <span className="material-icons-outlined text-primary">refresh</span>
-                  Devoluciones gratis
-                </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <span className="material-icons-outlined text-primary">shield</span>
-                  Pago seguro
-                </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <span className="material-icons-outlined text-primary">checkroom</span>
-                  Calidad garantizada
-                </div>
-              </div>
+                 <div className="flex items-center gap-2 text-gray-600">
+                   <Truck size={16} strokeWidth={0.75} className="text-primary" />
+                   Envío gratis +$150.000
+                 </div>
+                 <div className="flex items-center gap-2 text-gray-600">
+                   <RefreshCw size={16} strokeWidth={0.75} className="text-primary" />
+                   Devoluciones gratis
+                 </div>
+                 <div className="flex items-center gap-2 text-gray-600">
+                   <Shield size={16} strokeWidth={0.75} className="text-primary" />
+                   Pago seguro
+                 </div>
+                 <div className="flex items-center gap-2 text-gray-600">
+                   <Shirt size={16} strokeWidth={0.75} className="text-primary" />
+                   Calidad garantizada
+                 </div>
+               </div>
             </div>
           </div>
         </div>

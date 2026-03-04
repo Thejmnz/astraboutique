@@ -7,14 +7,17 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#A68463',
-        'background-light': '#F9F7F2',
+        primary: '#000000',
+        'background-light': '#F8F5F1',
         'background-dark': '#121212',
-        accent: '#A68463',
+        accent: '#000000',
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
-        display: ['Instrument Serif', 'serif'],
+        display: ['Bebas Neue', 'sans-serif'],
+        logo: ['Poppins', 'sans-serif'],
+        menu: ['ABCDiatype', 'sans-serif'],
+        heading: ['Items', 'sans-serif'],
       },
     },
   },

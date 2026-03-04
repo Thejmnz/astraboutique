@@ -1,126 +1,240 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { Search, ShoppingCart, Heart, User, Menu, X } from 'lucide-react'
 
 export default function Header() {
-  const [searchOpen, setSearchOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [menuKey, setMenuKey] = useState(0)
+  const [searchKey, setSearchKey] = useState(0)
+  const [randomProducts, setRandomProducts] = useState([])
+
+  const allProducts = [
+    { id: 1, name: 'Vortex', price: 189900, image: 'https://images.unsplash.com/photo-1763499390001-6ce9085593c1?q=80&w=764&auto=format&fit=crop' },
+    { id: 2, name: 'Cosmos', price: 215000, image: 'https://images.unsplash.com/photo-1621525157051-ecf5241693bf?q=80&w=687&auto=format&fit=crop' },
+    { id: 3, name: 'Zenith', price: 249900, image: 'https://plus.unsplash.com/premium_photo-1694618623690-db4ed5c37a2f?q=80&w=687&auto=format&fit=crop' },
+    { id: 4, name: 'Aura', price: 175000, image: 'https://images.unsplash.com/photo-1570397369306-f42d7dbce359?q=80&w=687&auto=format&fit=crop' },
+    { id: 5, name: 'Ocaso', price: 279900, image: 'https://images.unsplash.com/photo-1584105617768-1154ac9d5053?q=80&w=687&auto=format&fit=crop' },
+    { id: 6, name: 'Magma', price: 195000, image: 'https://images.unsplash.com/photo-1674291072795-583f08ab121d?q=80&w=764&auto=format&fit=crop' },
+    { id: 7, name: 'Estela', price: 225000, image: 'https://images.unsplash.com/photo-1738618806128-1e313827cd54?q=80&w=687&auto=format&fit=crop' },
+    { id: 8, name: 'Prisma', price: 299900, image: 'https://plus.unsplash.com/premium_photo-1690820317364-3e22c2f68eb4?q=80&w=687&auto=format&fit=crop' },
+  ]
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (searchOpen && !e.target.closest('.search-dropdown')) {
-        setSearchOpen(false)
-      }
+    if (searchOpen) {
+      const shuffled = [...allProducts].sort(() => 0.5 - Math.random())
+      setRandomProducts(shuffled.slice(0, 2))
     }
-    document.addEventListener('click', handleClickOutside)
-    return () => document.removeEventListener('click', handleClickOutside)
+  }, [searchOpen])
+
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+      setMenuKey(prev => prev + 1)
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [mobileMenuOpen])
+
+  useEffect(() => {
+    if (searchOpen) {
+      document.body.style.overflow = 'hidden'
+      setSearchKey(prev => prev + 1)
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
   }, [searchOpen])
 
   return (
-    <header className="sticky top-0 z-50 bg-background-light/80 backdrop-blur-md border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-6 py-2 hidden md:flex justify-between items-center text-[11px] uppercase tracking-widest text-gray-500">
-        <div className="flex gap-6 items-center">
-          <span className="flex items-center gap-1 cursor-pointer hover:text-primary transition-colors">
-            Colombia (COP $)
-            <span className="material-icons-outlined text-sm">expand_more</span>
-          </span>
-          <span className="flex items-center gap-1 cursor-pointer hover:text-primary transition-colors">
-            Español
-            <span className="material-icons-outlined text-sm">expand_more</span>
-          </span>
+    <header 
+      style={{ 
+        position: 'absolute', 
+        top: 16,
+        left: 0, 
+        right: 0, 
+        zIndex: 9999, 
+        backgroundColor: 'transparent'
+      }}
+      className="md:!top-4 !top-4"
+    >
+      <div className="w-full px-6 py-4 flex items-center justify-between relative">
+        <div className="flex items-center gap-4">
+          <button className="hover:text-primary transition-colors md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            {mobileMenuOpen ? <X size={20} strokeWidth={0.75} /> : <Menu size={20} strokeWidth={0.75} />}
+          </button>
+          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-800 font-menu normal-case flex-shrink-0">
+            <Link className="hover:text-primary transition-colors whitespace-nowrap" to="/">Popular</Link>
+            <Link className="hover:text-primary transition-colors whitespace-nowrap" to="/">Nuevos</Link>
+            <Link className="hover:text-primary transition-colors whitespace-nowrap" to="/">Ofertas</Link>
+          </nav>
         </div>
-        <div className="flex gap-4">
-          <a className="hover:text-primary transition-colors" href="#">Facebook</a>
-          <a className="hover:text-primary transition-colors" href="#">Instagram</a>
-          <a className="hover:text-primary transition-colors" href="#">TikTok</a>
-        </div>
-      </div>
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-8 flex-1">
-          <Link to="/" className="text-2xl font-bold tracking-tight">
-            Astra <span className="text-primary italic font-display text-3xl font-semibold">Boutique</span>
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
+          <Link to="/" className="flex items-center">
+            <img src="/logo.png" alt="Astra Boutique" className="h-6" />
           </Link>
         </div>
-        <nav className="hidden md:flex items-center gap-8 text-[11px] font-semibold tracking-widest text-gray-800">
-          <Link className="hover:text-primary transition-colors" to="/">POPULAR</Link>
-          <Link className="relative group" to="/">
-            NUEVOS
-            <span className="absolute -top-3 -right-4 bg-primary text-white text-[8px] px-1 rounded-sm">NEW</span>
-          </Link>
-          <Link className="hover:text-primary transition-colors" to="/">OFERTAS</Link>
-        </nav>
-        <div className="flex items-center gap-5 flex-1 justify-end">
-          <div className="relative search-dropdown hidden md:block">
-            <button className="hover:text-primary transition-colors" onClick={() => setSearchOpen(!searchOpen)}>
-              <span className="material-icons-outlined">search</span>
-            </button>
-            {searchOpen && (
-              <div className="absolute right-0 top-12 w-72 bg-white rounded-2xl shadow-2xl p-4 border border-gray-100">
-                <div className="relative">
-                  <span className="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">search</span>
-                  <input 
-                    className="w-full bg-background-light border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-1 focus:ring-primary focus:outline-none" 
-                    placeholder="Buscar productos..." 
-                    type="text"
-                    autoFocus
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-          <button className="relative hover:text-primary transition-colors hidden md:flex">
-            <span className="material-icons-outlined">shopping_cart</span>
+        <div className="flex items-center gap-5 justify-end flex-shrink-0">
+          <button className="hover:text-primary transition-colors flex items-center" onClick={() => setSearchOpen(!searchOpen)}>
+            <Search size={20} strokeWidth={0.75} />
+          </button>
+          <button className="relative hover:text-primary transition-colors flex">
+            <ShoppingCart size={20} strokeWidth={0.75} />
             <span className="absolute -top-1 -right-1 bg-primary text-white text-[8px] w-4 h-4 flex items-center justify-center rounded-full">3</span>
           </button>
           <button className="hover:text-primary transition-colors hidden md:flex">
-            <span className="material-icons-outlined">favorite_border</span>
+            <Heart size={20} strokeWidth={0.75} />
           </button>
           <button className="hover:text-primary transition-colors hidden md:flex">
-            <span className="material-icons-outlined">person_outline</span>
-          </button>
-          <button className="hover:text-primary transition-colors md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            <span className="material-icons-outlined">{mobileMenuOpen ? 'close' : 'menu'}</span>
+            <User size={20} strokeWidth={0.75} />
           </button>
         </div>
       </div>
+
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-100">
-          <nav className="flex flex-col px-6 py-4 gap-4 text-sm font-semibold tracking-widest text-gray-800">
-            <Link className="hover:text-primary transition-colors py-2" to="/" onClick={() => setMobileMenuOpen(false)}>POPULAR</Link>
-            <Link className="hover:text-primary transition-colors py-2 flex items-center gap-2" to="/" onClick={() => setMobileMenuOpen(false)}>
-              NUEVOS
-              <span className="bg-primary text-white text-[8px] px-2 py-0.5 rounded-sm">NEW</span>
+        <div 
+          className="fixed inset-0 bg-black/20 z-[9998] md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      <div 
+        className={`fixed top-0 left-0 h-full w-full z-[9999] md:hidden transform transition-transform duration-500 ease-out ${
+          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+        style={{ backgroundColor: '#F8F5F1' }}
+      >
+        <div className="flex flex-col h-full">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <Link to="/" className="flex items-center" onClick={() => setMobileMenuOpen(false)}>
+              <img src="/logo.png" alt="Astra Boutique" className="h-6" />
             </Link>
-            <Link className="hover:text-primary transition-colors py-2" to="/" onClick={() => setMobileMenuOpen(false)}>OFERTAS</Link>
+            <button 
+              className="hover:text-primary transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <X size={16} strokeWidth={0.75} />
+            </button>
+          </div>
+
+          <nav className="flex flex-col px-6 pt-8 gap-4">
+            <Link 
+              key={`popular-${menuKey}`}
+              className="text-sm font-medium text-gray-800 font-menu hover:text-primary transition-all transform translate-y-4 opacity-0 animate-fadeInUp normal-case"
+              style={{ animationDelay: '0.5s', animationFillMode: 'forwards' }}
+              to="/" 
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Popular
+            </Link>
+            <Link 
+              key={`nuevos-${menuKey}`}
+              className="text-sm font-medium text-gray-800 font-menu hover:text-primary transition-all transform translate-y-4 opacity-0 animate-fadeInUp normal-case"
+              style={{ animationDelay: '0.7s', animationFillMode: 'forwards' }}
+              to="/" 
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Nuevos
+            </Link>
+            <Link 
+              key={`ofertas-${menuKey}`}
+              className="text-sm font-medium text-gray-800 font-menu hover:text-primary transition-all transform translate-y-4 opacity-0 animate-fadeInUp normal-case"
+              style={{ animationDelay: '0.9s', animationFillMode: 'forwards' }}
+              to="/" 
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Ofertas
+            </Link>
           </nav>
-          <div className="px-6 pb-4">
-            <div className="relative mb-4">
-              <span className="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">search</span>
-              <input 
-                className="w-full bg-background-light border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-1 focus:ring-primary focus:outline-none" 
-                placeholder="Buscar productos..." 
-                type="text"
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <button className="relative hover:text-primary transition-colors">
-                  <span className="material-icons-outlined">shopping_cart</span>
-                  <span className="absolute -top-1 -right-1 bg-primary text-white text-[8px] w-4 h-4 flex items-center justify-center rounded-full">3</span>
-                </button>
-                <button className="hover:text-primary transition-colors">
-                  <span className="material-icons-outlined">favorite_border</span>
-                </button>
-                <button className="hover:text-primary transition-colors">
-                  <span className="material-icons-outlined">person_outline</span>
-                </button>
+        </div>
+      </div>
+      {searchOpen && (
+        <div 
+          className="fixed inset-0 bg-black/20 z-[9998]"
+          onClick={() => setSearchOpen(false)}
+        />
+      )}
+
+      <div 
+        className={`fixed top-0 left-0 h-full w-full z-[9999] transform transition-opacity duration-500 ease-out ${
+          searchOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        style={{ backgroundColor: '#F8F5F1' }}
+      >
+        <div className="flex flex-col h-full">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <Link to="/" className="flex items-center" onClick={() => setSearchOpen(false)}>
+              <img src="/logo.png" alt="Astra Boutique" className="h-6" />
+            </Link>
+            <button 
+              className="hover:text-primary transition-colors"
+              onClick={() => setSearchOpen(false)}
+            >
+              <X size={16} strokeWidth={0.75} />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-6 py-8">
+            <div 
+              key={`search-input-${searchKey}`}
+              className="transform translate-y-4 opacity-0 animate-fadeInUp"
+              style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}
+            >
+              <div className="relative flex items-center mb-12">
+                <Search className="absolute left-4 text-gray-400" size={20} strokeWidth={0.75} />
+                <input 
+                  className="w-full bg-white border border-gray-200 rounded-full py-4 pl-12 pr-4 text-base font-menu focus:ring-1 focus:ring-primary focus:outline-none"
+                  placeholder="Buscar productos..."
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  autoFocus
+                />
               </div>
-              <div className="text-xs text-gray-500">
-                Colombia (COP $) | Español
+            </div>
+
+            <div>
+              <h3 
+                key={`search-title-${searchKey}`}
+                className="text-sm font-medium text-gray-800 font-menu mb-6 transform translate-y-4 opacity-0 animate-fadeInUp"
+                style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}
+              >
+                Búsqueda rápida
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                {randomProducts.map((product, index) => (
+                  <Link
+                    key={`product-${searchKey}-${product.id}`}
+                    to={`/producto/${product.id}`}
+                    onClick={() => setSearchOpen(false)}
+                    className="group cursor-pointer transform translate-y-4 opacity-0 animate-fadeInUp"
+                    style={{ animationDelay: `${0.5 + index * 0.1}s`, animationFillMode: 'forwards' }}
+                  >
+                    <div className="relative overflow-hidden aspect-[2/3] bg-gray-100 mb-3">
+                      <img 
+                        src={product.image} 
+                        alt={product.name}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    </div>
+                    <h3 className="text-sm font-medium text-gray-800 font-menu">{product.name}</h3>
+                    <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
+                      ${product.price.toLocaleString('es-CO')} COP
+                    </p>
+                  </Link>
+                ))}
               </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
     </header>
   )
 }
