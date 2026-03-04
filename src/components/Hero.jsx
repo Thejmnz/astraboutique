@@ -17,9 +17,14 @@ export default function Hero() {
   useEffect(() => {
     const updateDimensions = () => {
       if (containerRef.current) {
-        setDimensions({
-          width: containerRef.current.offsetWidth,
-          height: containerRef.current.offsetHeight
+        const newWidth = containerRef.current.offsetWidth
+        const newHeight = containerRef.current.offsetHeight
+        
+        setDimensions(prev => {
+          if (prev.width !== newWidth) {
+            return { width: newWidth, height: newHeight }
+          }
+          return prev
         })
       }
     }
@@ -93,7 +98,7 @@ export default function Hero() {
   return (
     <section 
       ref={containerRef}
-      className="relative w-full h-dvh overflow-hidden"
+      className="relative w-full h-svh overflow-hidden"
     >
       <img
         src="/hero.png"
