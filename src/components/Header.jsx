@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Search, ShoppingCart, Heart, User, Menu, X } from 'lucide-react'
+import { supabase } from '../lib/supabase'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -10,23 +11,28 @@ export default function Header() {
   const [searchKey, setSearchKey] = useState(0)
   const [randomProducts, setRandomProducts] = useState([])
 
-  const allProducts = [
-    { id: 1, name: 'Vortex', price: 189900, image: 'https://images.unsplash.com/photo-1763499390001-6ce9085593c1?q=80&w=764&auto=format&fit=crop' },
-    { id: 2, name: 'Cosmos', price: 215000, image: 'https://images.unsplash.com/photo-1621525157051-ecf5241693bf?q=80&w=687&auto=format&fit=crop' },
-    { id: 3, name: 'Zenith', price: 249900, image: 'https://plus.unsplash.com/premium_photo-1694618623690-db4ed5c37a2f?q=80&w=687&auto=format&fit=crop' },
-    { id: 4, name: 'Aura', price: 175000, image: 'https://images.unsplash.com/photo-1570397369306-f42d7dbce359?q=80&w=687&auto=format&fit=crop' },
-    { id: 5, name: 'Ocaso', price: 279900, image: 'https://images.unsplash.com/photo-1584105617768-1154ac9d5053?q=80&w=687&auto=format&fit=crop' },
-    { id: 6, name: 'Magma', price: 195000, image: 'https://images.unsplash.com/photo-1674291072795-583f08ab121d?q=80&w=764&auto=format&fit=crop' },
-    { id: 7, name: 'Estela', price: 225000, image: 'https://images.unsplash.com/photo-1738618806128-1e313827cd54?q=80&w=687&auto=format&fit=crop' },
-    { id: 8, name: 'Prisma', price: 299900, image: 'https://plus.unsplash.com/premium_photo-1690820317364-3e22c2f68eb4?q=80&w=687&auto=format&fit=crop' },
-  ]
-
   useEffect(() => {
     if (searchOpen) {
-      const shuffled = [...allProducts].sort(() => 0.5 - Math.random())
-      setRandomProducts(shuffled.slice(0, 2))
+      fetchRandomProducts()
     }
   }, [searchOpen])
+
+  const fetchRandomProducts = async () => {
+    const { data } = await supabase
+      .from('products')
+      .select('id, name, slug, price, images')
+      .limit(4)
+    
+    if (data) {
+      setRandomProducts(data.map(p => ({
+        id: p.id,
+        slug: p.slug,
+        name: p.name,
+        price: p.price,
+        image: p.images?.[0]
+      })))
+    }
+  }
 
   useEffect(() => {
     if (mobileMenuOpen) {
@@ -199,39 +205,47 @@ export default function Header() {
               </div>
             </div>
 
-            <div>
-              <h3 
-                key={`search-title-${searchKey}`}
-                className="text-sm font-medium text-gray-800 font-menu mb-6 transform translate-y-4 opacity-0 animate-fadeInUp"
-                style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}
-              >
-                Búsqueda rápida
-              </h3>
-              
-              <div className="grid grid-cols-2 gap-4">
-                {randomProducts.map((product, index) => (
-                  <Link
-                    key={`product-${searchKey}-${product.id}`}
-                    to={`/producto/${product.id}`}
-                    onClick={() => setSearchOpen(false)}
-                    className="group cursor-pointer transform translate-y-4 opacity-0 animate-fadeInUp"
-                    style={{ animationDelay: `${0.5 + index * 0.1}s`, animationFillMode: 'forwards' }}
-                  >
-                    <div className="relative overflow-hidden aspect-[2/3] bg-gray-100 mb-3">
-                      <img 
-                        src={product.image} 
-                        alt={product.name}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
-                    </div>
-                    <h3 className="text-sm font-medium text-gray-800 font-menu">{product.name}</h3>
-                    <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
-                      ${product.price.toLocaleString('es-CO')} COP
-                    </p>
-                  </Link>
-                ))}
+            {randomProducts.length > 0 && (
+              <div>
+                <h3 
+                  key={`search-title-${searchKey}`}
+                  className="text-sm font-medium text-gray-800 font-menu mb-6 transform translate-y-4 opacity-0 animate-fadeInUp"
+                  style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}
+                >
+                  Búsqueda rápida
+                </h3>
+                
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {randomProducts.map((product, index) => (
+                    <Link
+                      key={`product-${searchKey}-${product.id}`}
+                      to={`/producto/${product.slug || product.id}`}
+                      onClick={() => setSearchOpen(false)}
+                      className="group cursor-pointer transform translate-y-4 opacity-0 animate-fadeInUp"
+                      style={{ animationDelay: `${0.5 + index * 0.1}s`, animationFillMode: 'forwards' }}
+                    >
+                      <div className="relative overflow-hidden aspect-[2/3] bg-gray-100 mb-3">
+                        {product.image && (
+                          <img 
+                            src={product.image} 
+                            alt={product.name}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          />
+                        )}
+                      </div>
+                      <h3 className="text-sm font-medium text-gray-800 font-menu">{product.name}</h3>
+                      <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
+                        ${product.price?.toLocaleString('es-CO')} COP
+                      </p>
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+
+            {randomProducts.length === 0 && (
+              <p className="text-gray-500 text-center">No hay productos disponibles</p>
+            )}
           </div>
         </div>
       </div>

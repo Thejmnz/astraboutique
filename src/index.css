@@ -48,3 +48,106 @@ body {
 .animate-fadeInUp {
   animation: fadeInUp 0.6s ease-out forwards;
 }
+
+/* Tiptap editor styles */
+.ProseMirror {
+  outline: none;
+}
+
+.ProseMirror p {
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+  padding-left: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+  padding-left: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror strong {
+  font-weight: bold;
+}
+
+.ProseMirror em {
+  font-style: italic;
+}
+
+/* Product notes display styles */
+.product-notes-display {
+  width: 100%;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.product-notes-display * {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  font-size: 12px;
+}
+
+.product-notes-display p {
+  margin-bottom: 0.5rem;
+}
+
+.product-notes-display p:last-child {
+  margin-bottom: 0;
+}
+
+.product-notes-display ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.product-notes-display ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.product-notes-display li {
+  margin-bottom: 0.25rem;
+}
+
+.product-notes-display strong,
+.product-notes-display b {
+  font-weight: 600;
+}
+
+.product-notes-display em,
+.product-notes-display i {
+  font-style: italic;
+}
+
+.product-notes-display a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+/* Rich text editor placeholder */
+.product-notes-display:empty:before {
+  content: attr(data-placeholder);
+  color: #9CA3AF;
+  pointer-events: none;
+}
+
+/* Rich text editor in admin */
+.border .product-notes-display {
+  font-size: 14px;
+}
+
+.border .product-notes-display * {
+  font-size: 14px;
+}
+
