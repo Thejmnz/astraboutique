@@ -1,24 +1,34 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { CartProvider } from './context/CartContext'
+import { WishlistProvider } from './context/WishlistContext'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import Products from './components/Products'
 import Footer from './components/Footer'
 import ProductPage from './pages/ProductPage'
+import CheckoutPage from './pages/CheckoutPage'
+import BioLinksPage from './pages/BioLinksPage'
 import Login from './pages/admin/Login'
 import Dashboard from './pages/admin/Dashboard'
 import ProductsList from './pages/admin/ProductsList'
 import AddProduct from './pages/admin/AddProduct'
 import EditProduct from './pages/admin/EditProduct'
+import OrdersPage from './pages/admin/OrdersPage'
+import BioLinksAdmin from './pages/admin/BioLinksAdmin'
 import ProtectedRoute from './components/ProtectedRoute'
 import ScrollToTop from './components/ScrollToTop'
+import CartDrawer from './components/CartDrawer'
 
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <ScrollToTop />
-        <Routes>
+      <CartProvider>
+        <WishlistProvider>
+        <Router>
+          <ScrollToTop />
+          <CartDrawer />
+          <Routes>
           <Route path="/admin/login" element={<Login />} />
           <Route
             path="/admin"
@@ -53,6 +63,23 @@ function App() {
             }
           />
           <Route
+            path="/admin/pedidos"
+            element={
+              <ProtectedRoute>
+                <OrdersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/links"
+            element={
+              <ProtectedRoute>
+                <BioLinksAdmin />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/links" element={<BioLinksPage />} />
+          <Route
             path="/*"
             element={
               <div className="bg-background-light text-[#1A1A1A] font-sans min-h-screen">
@@ -69,6 +96,7 @@ function App() {
                       }
                     />
                     <Route path="/producto/:slug" element={<ProductPage />} />
+                    <Route path="/checkout" element={<CheckoutPage />} />
                   </Routes>
                 </main>
                 <Footer />
@@ -77,7 +105,9 @@ function App() {
           />
         </Routes>
       </Router>
-    </AuthProvider>
+        </WishlistProvider>
+      </CartProvider>
+  </AuthProvider>
   )
 }
 

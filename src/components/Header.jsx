@@ -2,8 +2,12 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Search, ShoppingCart, Heart, User, Menu, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { useCart } from '../context/CartContext'
+import { useWishlist } from '../context/WishlistContext'
 
 export default function Header() {
+  const { cartCount, setIsCartOpen } = useCart()
+  const { wishlistCount, setIsWishlistOpen } = useWishlist()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -90,16 +94,21 @@ export default function Header() {
           <button className="hover:text-primary transition-colors flex items-center" onClick={() => setSearchOpen(!searchOpen)}>
             <Search size={20} strokeWidth={0.75} />
           </button>
-          <button className="relative hover:text-primary transition-colors flex">
+          <button className="relative hover:text-primary transition-colors flex" onClick={() => setIsCartOpen(true)}>
             <ShoppingCart size={20} strokeWidth={0.75} />
-            <span className="absolute -top-1 -right-1 bg-primary text-white text-[8px] w-4 h-4 flex items-center justify-center rounded-full">3</span>
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-primary text-white text-[8px] w-4 h-4 flex items-center justify-center rounded-full">{cartCount}</span>
+            )}
           </button>
-          <button className="hover:text-primary transition-colors hidden md:flex">
+          <button className="relative hover:text-primary transition-colors hidden md:flex" onClick={() => setIsWishlistOpen(true)}>
             <Heart size={20} strokeWidth={0.75} />
+            {wishlistCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-primary text-white text-[8px] w-4 h-4 flex items-center justify-center rounded-full">{wishlistCount}</span>
+            )}
           </button>
-          <button className="hover:text-primary transition-colors hidden md:flex">
+          <Link to="/cuenta" className="hover:text-primary transition-colors hidden md:flex">
             <User size={20} strokeWidth={0.75} />
-          </button>
+          </Link>
         </div>
       </div>
 

@@ -2,9 +2,13 @@ import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Heart, X, Plus, Minus } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { useCart } from '../context/CartContext'
+import { useWishlist } from '../context/WishlistContext'
 
 export default function ProductPage() {
   const { slug } = useParams()
+  const { addToCart } = useCart()
+  const { isInWishlist, toggleWishlist } = useWishlist()
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [selectedSize, setSelectedSize] = useState('')
@@ -63,25 +67,7 @@ export default function ProductPage() {
       return
     }
     setError('')
-    const cartItem = {
-      productId: product.id,
-      name: product.name,
-      price: product.price,
-      size: selectedSize,
-      image: product.images?.[0],
-      quantity: quantity,
-    }
-    const existingCart = JSON.parse(localStorage.getItem('cart') || '[]')
-    const existingItemIndex = existingCart.findIndex(
-      item => item.productId === product.id && item.size === selectedSize
-    )
-    if (existingItemIndex > -1) {
-      existingCart.push(cartItem)
-    } else {
-      existingCart[existingItemIndex].quantity += quantity
-    }
-    localStorage.setItem('cart', JSON.stringify(existingCart))
-    alert(`Agregado al carrito: ${product.name} - Talla: ${selectedSize}`)
+    addToCart(product, selectedSize, quantity)
   }
 
   const allSizes = product.product_sizes || []
@@ -479,11 +465,18 @@ export default function ProductPage() {
               >
                 Agregar al Carrito
               </button>
-              <button 
-                className="w-14 h-14 flex items-center justify-center hover:opacity-90 transition-all"
-                style={{ backgroundColor: '#251E1A', borderRadius: 0 }}
+              <button
+                onClick={() => toggleWishlist(product)}
+                className={`w-14 h-14 flex items-center justify-center hover:opacity-90 transition-all ${
+                  isInWishlist(product.id) ? 'bg-red-500' : ''
+                }`}
+                style={{ backgroundColor: isInWishlist(product.id) ? '#ef4444' : '#251E1A', borderRadius: 0 }}
               >
-                <Heart size={20} strokeWidth={0.75} className="text-white" />
+                <Heart
+                  size={20}
+                  strokeWidth={0.75}
+                  className={`text-white ${isInWishlist(product.id) ? 'fill-white' : ''}`}
+                />
               </button>
             </div>
 
