@@ -101,19 +101,13 @@ export default function OrdersPage() {
     return (now - created) > 15 * 60 * 1000
   }
 
-  const autoExpireOrders = () => {
-    setOrders(prev => prev.map(o => {
-      if (isOrderExpired(o)) return { ...o, status: 'expired' }
-      return o
-    }))
+  const getDisplayStatus = (order) => {
+    return isOrderExpired(order) ? 'expired' : order.status
   }
 
-  useEffect(() => {
-    if (orders.length > 0) autoExpireOrders()
-  }, [orders])
-
   const filteredOrders = orders.filter(order => {
-    const matchesStatus = statusFilter === 'all' || order.status === statusFilter
+    const displayStatus = getDisplayStatus(order)
+    const matchesStatus = statusFilter === 'all' || displayStatus === statusFilter
     const matchesSearch = searchQuery === '' ||
       order.order_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.customer_email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -131,8 +125,9 @@ export default function OrdersPage() {
     })
   }
 
-  const getNextStatuses = (currentStatus) => {
-    switch (currentStatus) {
+  const getNextStatuses = (order) => {
+    const status = getDisplayStatus(order)
+    switch (status) {
       case 'pending':
         return ['order_confirmed', 'cancelled']
       case 'order_confirmed':
@@ -200,8 +195,8 @@ export default function OrdersPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_MAP[order.status]?.color || 'bg-gray-100 text-gray-600'}`}>
-                        {STATUS_MAP[order.status]?.label || order.status}
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_MAP[getDisplayStatus(order)]?.color || 'bg-gray-100 text-gray-600'}`}>
+                        {STATUS_MAP[getDisplayStatus(order)]?.label || order.status}
                       </span>
                       <span className="text-sm font-medium">${Number(order.total).toLocaleString('es-CO')} COP</span>
                       <span className="text-xs text-gray-400 hidden sm:block">{formatDate(order.created_at)}</span>

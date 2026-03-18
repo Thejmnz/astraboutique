@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { Mail, Check } from 'lucide-react'
 
-export default function RegisterPage() {
-  const navigate = useNavigate()
+export default function CustomerRegisterPage() {
   const { signUp } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -24,24 +25,24 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
       setError('Por favor completa todos los campos requeridos')
       return
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Las contraseñas no coinciden')
+      setError('Las contrasenas no coinciden')
       return
     }
 
     if (formData.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres')
+      setError('La contrasena debe tener al menos 6 caracteres')
       return
     }
 
     setLoading(true)
-    
+
     const { error } = await signUp({
       firstName: formData.firstName,
       lastName: formData.lastName,
@@ -55,8 +56,35 @@ export default function RegisterPage() {
     if (error) {
       setError(error.message)
     } else {
-      navigate('/cuenta')
+      setSuccess(true)
     }
+  }
+
+  if (success) {
+    return (
+      <div className="min-h-screen bg-background-light pt-24 pb-16">
+        <div className="max-w-md mx-auto px-6 text-center">
+          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
+            <Mail size={28} className="text-green-600" />
+          </div>
+          <h1 className="text-2xl font-heading font-light mb-3">Revisa tu email</h1>
+          <p className="text-gray-500 font-menu mb-2">
+            Te enviamos un enlace de confirmacion a:
+          </p>
+          <p className="text-sm font-menu font-medium mb-6">{formData.email}</p>
+          <p className="text-gray-400 text-xs font-menu mb-8">
+            Una vez confirmes tu email podras iniciar sesion en Astra Boutique.
+          </p>
+          <Link
+            to="/login"
+            className="inline-block text-white py-3 px-8 text-sm font-menu hover:opacity-90 transition-all"
+            style={{ backgroundColor: '#251E1A' }}
+          >
+            Ir a iniciar sesion
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -64,13 +92,11 @@ export default function RegisterPage() {
       <div className="max-w-md mx-auto px-6">
         <h1 className="text-2xl font-heading font-light mb-2 text-center">Crear cuenta</h1>
         <p className="text-gray-500 font-menu text-center mb-8">
-          Únete a Astra Boutique para una mejor experiencia de compra
+          Unete a Astra Boutique para una mejor experiencia de compra
         </p>
 
         {error && (
-          <div className="bg-red-50 text-red-600 p-4 mb-6 text-sm font-menu">
-            {error}
-          </div>
+          <div className="bg-red-50 text-red-600 p-4 mb-6 text-sm font-menu">{error}</div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -109,7 +135,7 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-menu text-gray-600 mb-1">Teléfono</label>
+            <label className="block text-xs font-menu text-gray-600 mb-1">Telefono</label>
             <input
               type="tel"
               name="phone"
@@ -120,7 +146,7 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-menu text-gray-600 mb-1">Contraseña *</label>
+            <label className="block text-xs font-menu text-gray-600 mb-1">Contrasena *</label>
             <input
               type="password"
               name="password"
@@ -131,7 +157,7 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-menu text-gray-600 mb-1">Confirmar contraseña *</label>
+            <label className="block text-xs font-menu text-gray-600 mb-1">Confirmar contrasena *</label>
             <input
               type="password"
               name="confirmPassword"
@@ -152,10 +178,8 @@ export default function RegisterPage() {
         </form>
 
         <p className="text-center text-sm font-menu text-gray-500 mt-6">
-          ¿Ya tienes cuenta?{' '}
-          <Link to="/login" className="text-primary hover:underline">
-            Iniciar sesión
-          </Link>
+          Ya tienes cuenta?{' '}
+          <Link to="/login" className="text-[#251E1A] hover:underline">Iniciar sesion</Link>
         </p>
       </div>
     </div>

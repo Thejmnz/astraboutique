@@ -5,40 +5,58 @@ const AuthContext = createContext({})
 
 export const useAuth = () => useContext(AuthContext)
 
-function getInitialCustomer() {
-  try {
-    const saved = localStorage.getItem('customer')
-    return saved ? JSON.parse(saved) : null
-  } catch {
-    return null
-  }
-}
-
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
-  const [customer, setCustomer] = useState(getInitialCustomer)
+  const [customer, setCustomer] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
+      if (session?.user) {
+        const role = session.user.user_metadata?.role
+        if (role === 'customer') {
+          const meta = session.user.user_metadata || {}
+          setCustomer({
+            id: session.user.id,
+            firstName: meta.first_name || '',
+            lastName: meta.last_name || '',
+            email: session.user.email,
+            phone: meta.phone || '',
+            emailConfirmed: session.user.email_confirmed_at,
+          })
+        } else {
+          setUser(session.user)
+        }
+      }
       setLoading(false)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+      if (session?.user) {
+        const role = session.user.user_metadata?.role
+        if (role === 'customer') {
+          const meta = session.user.user_metadata || {}
+          setCustomer({
+            id: session.user.id,
+            firstName: meta.first_name || '',
+            lastName: meta.last_name || '',
+            email: session.user.email,
+            phone: meta.phone || '',
+            emailConfirmed: session.user.email_confirmed_at,
+          })
+          setUser(null)
+        } else {
+          setUser(session.user)
+          setCustomer(null)
+        }
+      } else {
+        setUser(null)
+        setCustomer(null)
+      }
     })
 
     return () => subscription.unsubscribe()
   }, [])
-
-  useEffect(() => {
-    if (customer) {
-      localStorage.setItem('customer', JSON.stringify(customer))
-    } else {
-      localStorage.removeItem('customer')
-    }
-  }, [customer])
 
   const signIn = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
@@ -52,54 +70,66 @@ export function AuthProvider({ children }) {
   }
 
   const signUp = async (userData) => {
-    const existingUsers = JSON.parse(localStorage.getItem('customers') || '[]')
-    const exists = existingUsers.find(u => u.email === userData.email)
-    if (exists) {
-      return { error: { message: 'Este email ya está registrado' } }
+    const { data, error } = await supabase.auth.signUp({
+      email: userData.email,
+      password: userData.password,
+      options: {
+        data: {
+          role: 'customer',
+          first_name: userData.firstName,
+          last_name: userData.lastName,
+          phone: userData.phone || null,
+        },
+        emailRedirectTo: `${window.location.origin}/login`,
+      },
+    })
+
+    if (error) return { error: { message: error.message } }
+
+    if (data.user && !data.session) {
+      return { data: { needsConfirmation: true }, error: null }
     }
-    const newUser = {
-      id: 'CUS-' + Date.now().toString(36).toUpperCase(),
-      ...userData,
-      createdAt: new Date().toISOString(),
-    }
-    existingUsers.push(newUser)
-    localStorage.setItem('customers', JSON.stringify(existingUsers))
-    setCustomer(newUser)
-    return { data: newUser, error: null }
+
+    return { data: data.user, error: null }
   }
 
   const loginCustomer = async (email, password) => {
-    const existingUsers = JSON.parse(localStorage.getItem('customers') || '[]')
-    const user = existingUsers.find(u => u.email === email && u.password === password)
-    if (!user) {
-      return { error: { message: 'Email o contraseña incorrectos' } }
-    }
-    setCustomer(user)
-    return { data: user, error: null }
-  }
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
-  const updateCustomer = (updates) => {
-    const updated = { ...customer, ...updates }
-    setCustomer(updated)
-    const existingUsers = JSON.parse(localStorage.getItem('customers') || '[]')
-    const index = existingUsers.findIndex(u => u.id === customer.id)
-    if (index > -1) {
-      existingUsers[index] = updated
-      localStorage.setItem('customers', JSON.stringify(existingUsers))
+    if (error) return { error: { message: 'Email o contrasena incorrectos' } }
+
+    if (data.user && !data.user.email_confirmed_at) {
+      await supabase.auth.signOut()
+      return { error: { message: 'Por favor confirma tu email antes de iniciar sesion. Revisa tu bandeja de entrada.' } }
     }
-    return updated
+
+    const meta = data.user.user_metadata || {}
+    if (meta.role !== 'customer') {
+      await supabase.auth.signOut()
+      return { error: { message: 'Email o contrasena incorrectos' } }
+    }
+
+    const customerData = {
+      id: data.user.id,
+      firstName: meta.first_name || '',
+      lastName: meta.last_name || '',
+      email: data.user.email,
+      phone: meta.phone || '',
+      emailConfirmed: data.user.email_confirmed_at,
+    }
+    setCustomer(customerData)
+    return { data: customerData, error: null }
   }
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
+    <AuthContext.Provider value={{
+      user,
       customer,
-      loading, 
-      signIn, 
+      loading,
+      signIn,
       signOut,
       signUp,
       loginCustomer,
-      updateCustomer,
     }}>
       {children}
     </AuthContext.Provider>

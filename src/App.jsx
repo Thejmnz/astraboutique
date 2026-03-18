@@ -8,6 +8,9 @@ import Products from './components/Products'
 import Footer from './components/Footer'
 import ProductPage from './pages/ProductPage'
 import CheckoutPage from './pages/CheckoutPage'
+import CustomerLogin from './pages/CustomerLoginPage'
+import CustomerRegister from './pages/CustomerLogin'
+import AccountPage from './pages/AccountPage'
 import BioLinksPage from './pages/BioLinksPage'
 import Login from './pages/admin/Login'
 import Dashboard from './pages/admin/Dashboard'
@@ -19,6 +22,7 @@ import BioLinksAdmin from './pages/admin/BioLinksAdmin'
 import ProtectedRoute from './components/ProtectedRoute'
 import ScrollToTop from './components/ScrollToTop'
 import CartDrawer from './components/CartDrawer'
+import WishlistDrawer from './components/WishlistDrawer'
 
 function App() {
   return (
@@ -28,6 +32,7 @@ function App() {
         <Router>
           <ScrollToTop />
           <CartDrawer />
+          <WishlistDrawer />
           <Routes>
           <Route path="/admin/login" element={<Login />} />
           <Route
@@ -97,6 +102,9 @@ function App() {
                     />
                     <Route path="/producto/:slug" element={<ProductPage />} />
                     <Route path="/checkout" element={<CheckoutPage />} />
+                    <Route path="/login" element={<CustomerLogin />} />
+                    <Route path="/registro" element={<CustomerRegister />} />
+                    <Route path="/cuenta" element={<AccountPage />} />
                   </Routes>
                 </main>
                 <Footer />
