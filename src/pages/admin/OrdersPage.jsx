@@ -134,6 +134,8 @@ export default function OrdersPage() {
         return ['payment_confirmed', 'cancelled']
       case 'payment_confirmed':
         return ['shipped', 'cancelled']
+      case 'expired':
+        return ['order_confirmed', 'cancelled']
       default:
         return []
     }
@@ -293,7 +295,7 @@ export default function OrdersPage() {
 
                     <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-gray-100">
                       <span className="text-xs text-gray-400 mr-2">Cambiar estado:</span>
-                      {getNextStatuses(order.status).map((status) => (
+                      {getNextStatuses(order).map((status) => (
                         <button
                           key={status}
                           disabled={updatingStatus === order.id}
@@ -340,7 +342,7 @@ export default function OrdersPage() {
                           )}
                         </div>
                       )}
-                      {(order.status === 'cancelled' || order.status === 'expired') && (
+                      {(order.status === 'cancelled' || getDisplayStatus(order) === 'expired') && (
                         <button
                           disabled={updatingStatus === order.id}
                           onClick={() => recoverOrder(order.id)}

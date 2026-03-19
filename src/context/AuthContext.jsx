@@ -60,9 +60,13 @@ export function AuthProvider({ children }) {
 
   const signIn = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-    if (!error && data.user) {
-      setUser(data.user)
+    if (error) return { data, error }
+    const role = data.user.user_metadata?.role
+    if (role === 'customer') {
+      await supabase.auth.signOut()
+      return { error: { message: 'Email o contrasena incorrectos' } }
     }
+    setUser(data.user)
     return { data, error }
   }
 

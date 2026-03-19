@@ -62,13 +62,14 @@ export default function AddProduct() {
     const uploadedUrls = []
 
     for (const file of files) {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+      const { convertToWebP } = await import('../../lib/convertToWebP')
+      const webpFile = await convertToWebP(file)
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.webp`
       const filePath = `products/${fileName}`
 
       const { error: uploadError } = await supabase.storage
         .from('products')
-        .upload(filePath, file)
+        .upload(filePath, webpFile)
 
       if (uploadError) {
         alert('Error al subir imagen: ' + uploadError.message)
