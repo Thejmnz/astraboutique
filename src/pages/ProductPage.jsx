@@ -387,27 +387,13 @@ export default function ProductPage() {
               {product.name}
             </h1>
             <p className="text-base text-primary font-menu mb-6">
-              ${product.price?.toLocaleString('es-CO')} COP
+              ${product.price?.toLocaleString('es-CO')}
             </p>
             
             {product.description && (
               <p className="text-gray-600 leading-relaxed font-menu mb-8 text-[12px]">
                 {product.description}
               </p>
-            )}
-
-            {product.color && (
-              <div className="mb-6">
-                <span 
-                  className="inline-block p-0.5 rounded-full"
-                  style={{ border: '1px solid #A49F9B' }}
-                >
-                  <span 
-                    className="w-5 h-5 rounded-full block"
-                    style={{ backgroundColor: product.color }}
-                  />
-                </span>
-              </div>
             )}
 
             {allSizes.length > 0 && (
@@ -450,6 +436,28 @@ export default function ProductPage() {
                     )
                   })}
                 </div>
+              </div>
+            )}
+
+            {product.badge && (
+              <div className="mb-6">
+                <span className="text-xs font-medium text-gray-800">Marca: </span>
+                <span className="text-xs font-bold tracking-wider text-primary border border-primary px-2 py-0.5 rounded-full">{product.badge}</span>
+              </div>
+            )}
+
+            {product.color && (
+              <div className="mb-6">
+                <p className="text-[12px] font-medium text-gray-800 mb-2">Color</p>
+                <span 
+                  className="inline-block p-0.5 rounded-full"
+                  style={{ border: '1px solid #A49F9B' }}
+                >
+                  <span 
+                    className="w-5 h-5 rounded-full block"
+                    style={{ backgroundColor: product.color }}
+                  />
+                </span>
               </div>
             )}
 

@@ -16,6 +16,7 @@ export default function Products() {
       .from('products')
       .select('*, product_sizes(*)')
       .order('created_at', { ascending: false })
+      .limit(4)
     setProducts(data || [])
     setLoading(false)
   }
@@ -49,11 +50,11 @@ export default function Products() {
                     src={product.images[0]}
                   />
                 )}
-                {product.is_new && (
-                  <span className="absolute top-4 left-4 bg-primary text-white text-[10px] px-3 py-1 rounded-full font-bold tracking-wider">
-                    NUEVO
-                  </span>
-                )}
+                  {product.is_new && (
+                    <span className="absolute top-4 left-4 bg-primary text-white text-[10px] px-3 py-1 rounded-full font-bold tracking-wider">
+                      NUEVO
+                    </span>
+                  )}
                 <button className="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-primary hover:text-white">
                   <Heart size={16} strokeWidth={0.75} />
                 </button>
@@ -62,21 +63,28 @@ export default function Products() {
                 <h3 className="text-sm font-medium text-gray-800 font-menu">
                   {product.name}
                 </h3>
-                <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
-                  ${product.price?.toLocaleString('es-CO')} COP
-                </p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
+                    ${product.price?.toLocaleString('es-CO')}
+                  </p>
+                  {product.badge && (
+                    <span className="text-[9px] font-bold tracking-wider text-primary border border-primary px-2 py-0.5 rounded-full">
+                      {product.badge.toUpperCase()}
+                    </span>
+                  )}
+                </div>
               </div>
             </Link>
           ))}
         </div>
         <div className="text-center mt-12 px-6">
-          <a
+          <Link
             className="inline-flex items-center gap-2 border border-primary text-primary px-8 py-3 rounded-full text-xs font-bold tracking-widest hover:bg-primary hover:text-white transition-all duration-300"
-            href="#"
+            to="/productos"
           >
             VER TODOS LOS JEANS
             <ChevronRight size={14} strokeWidth={0.75} />
-          </a>
+          </Link>
         </div>
       </div>
     </section>

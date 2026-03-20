@@ -12,6 +12,7 @@ import CustomerLogin from './pages/CustomerLoginPage'
 import CustomerRegister from './pages/CustomerLogin'
 import AccountPage from './pages/AccountPage'
 import BioLinksPage from './pages/BioLinksPage'
+import AllProducts from './pages/AllProducts'
 import Login from './pages/admin/Login'
 import Dashboard from './pages/admin/Dashboard'
 import ProductsList from './pages/admin/ProductsList'
@@ -101,6 +102,7 @@ function App() {
                       }
                     />
                     <Route path="/producto/:slug" element={<ProductPage />} />
+                    <Route path="/productos" element={<AllProducts />} />
                     <Route path="/checkout" element={<CheckoutPage />} />
                     <Route path="/login" element={<CustomerLogin />} />
                     <Route path="/registro" element={<CustomerRegister />} />

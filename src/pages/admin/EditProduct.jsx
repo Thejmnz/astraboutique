@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import AdminLayout from './AdminLayout'
-import { X, Upload, Plus, Trash2 } from 'lucide-react'
+import { X, Upload, Plus, Trash2, GripVertical } from 'lucide-react'
 import RichTextEditor from '../../components/RichTextEditor'
 
 const COLORS = [
@@ -32,6 +32,7 @@ export default function EditProduct() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [dragIndex, setDragIndex] = useState(null)
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -40,6 +41,7 @@ export default function EditProduct() {
     description: '',
     images: [],
     is_new: false,
+    badge: '',
     sizes: [],
     designNotes: '',
     fitNotes: '',
@@ -73,6 +75,7 @@ export default function EditProduct() {
       description: data.description || '',
       images: data.images || [],
       is_new: data.is_new || false,
+      badge: data.badge || '',
       sizes: data.product_sizes?.length > 0 
         ? data.product_sizes.map(s => ({ id: s.id, size: s.size, stock: s.stock.toString() }))
         : [{ size: '', stock: '' }],
@@ -126,6 +129,24 @@ export default function EditProduct() {
     })
   }
 
+  const handleDragStart = (index) => {
+    setDragIndex(index)
+  }
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault()
+    if (dragIndex === null || dragIndex === index) return
+    const newImages = [...formData.images]
+    const [moved] = newImages.splice(dragIndex, 1)
+    newImages.splice(index, 0, moved)
+    setFormData({ ...formData, images: newImages })
+    setDragIndex(index)
+  }
+
+  const handleDragEnd = () => {
+    setDragIndex(null)
+  }
+
   const handleAddSize = () => {
     setFormData({
       ...formData,
@@ -168,6 +189,7 @@ export default function EditProduct() {
         description: formData.description,
         images: formData.images,
         is_new: formData.is_new,
+        badge: formData.badge || null,
         design_notes: formData.designNotes,
         fit_notes: formData.fitNotes,
         fabrication_care: formData.fabricationCare
@@ -227,12 +249,22 @@ export default function EditProduct() {
             
             <div className="grid grid-cols-4 gap-4 mb-4">
               {formData.images.map((url, index) => (
-                <div key={index} className="relative aspect-[2/3] bg-gray-100 rounded-lg overflow-hidden group">
+                <div
+                  key={index}
+                  draggable
+                  onDragStart={() => handleDragStart(index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragEnd={handleDragEnd}
+                  className={`relative aspect-[2/3] bg-gray-100 rounded-lg overflow-hidden group cursor-grab active:cursor-grabbing ${dragIndex === index ? 'opacity-50 ring-2 ring-primary' : ''}`}
+                >
                   <img 
                     src={url} 
                     alt={`Product ${index + 1}`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover pointer-events-none"
                   />
+                  <div className="absolute top-2 left-2 bg-white rounded-full p-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                    <GripVertical size={14} className="text-gray-500" />
+                  </div>
                   <button
                     type="button"
                     onClick={() => handleRemoveImage(index)}
@@ -323,6 +355,13 @@ export default function EditProduct() {
                       style={{ backgroundColor: formData.color }}
                     />
                     <span className="text-sm text-gray-600">{formData.colorName}</span>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, color: '', colorName: '' })}
+                      className="text-gray-400 hover:text-red-500 transition-colors"
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
                 )}
               </div>
@@ -379,6 +418,19 @@ export default function EditProduct() {
                 />
                 <span className="text-sm font-medium text-gray-700">Marcar como nuevo</span>
               </label>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Etiqueta personalizada</label>
+              <input
+                type="text"
+                value={formData.badge}
+                onChange={(e) => setFormData({ ...formData, badge: e.target.value })}
+                placeholder="Ej: Best Seller, Edicion Limitada, Trending..."
+                className="w-full border border-gray-200 rounded-md py-2.5 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                maxLength={20}
+              />
+              <p className="text-xs text-gray-400 mt-1">Se muestra en la imagen del producto (max 20 caracteres). Si tambien esta marcado como nuevo, se muestran ambas etiquetas.</p>
             </div>
             
             <div className="space-y-3">
