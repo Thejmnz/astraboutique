@@ -19,6 +19,7 @@ export default function ProductPage() {
   const [error, setError] = useState('')
   const [openAccordion, setOpenAccordion] = useState('design')
   const [showLightbox, setShowLightbox] = useState(false)
+  const [recentlyViewed, setRecentlyViewed] = useState([])
 
   useEffect(() => {
     fetchProduct()
@@ -34,6 +35,12 @@ export default function ProductPage() {
     if (!error && data) {
       setProduct(data)
       supabase.from('products').update({ views: (data.views || 0) + 1 }).eq('id', data.id)
+
+      const stored = JSON.parse(localStorage.getItem('recentlyViewed') || '[]')
+      const filtered = stored.filter(p => p.id !== data.id)
+      filtered.unshift({ id: data.id, name: data.name, slug: data.slug, price: data.price, images: data.images })
+      localStorage.setItem('recentlyViewed', JSON.stringify(filtered.slice(0, 4)))
+      setRecentlyViewed(filtered.slice(0, 4))
     }
     setLoading(false)
   }
@@ -524,10 +531,24 @@ export default function ProductPage() {
               )}
 
               {product.fit_notes && (
-                <div className="border-b border-gray-200 py-2">
-                  <span className="text-[12px] font-medium text-gray-800 font-menu">Notas de Ajuste</span>
-                  <div className="pb-2 text-[12px] text-gray-600 font-menu product-notes-display">
-                    <div dangerouslySetInnerHTML={{ __html: product.fit_notes }} />
+                <div className="border-b border-gray-200">
+                  <button
+                    onClick={() => setOpenAccordion(openAccordion === 'fit' ? null : 'fit')}
+                    className="w-full py-2 flex items-center justify-between text-left font-menu"
+                  >
+                    <span className="text-[12px] font-medium text-gray-800">Notas de Ajuste</span>
+                    <span className="text-gray-500 text-lg w-4 flex justify-center">
+                      {openAccordion === 'fit' ? '−' : '+'}
+                    </span>
+                  </button>
+                  <div 
+                    className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                      openAccordion === 'fit' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <div className="pb-2 text-[12px] text-gray-600 font-menu product-notes-display">
+                      <div dangerouslySetInnerHTML={{ __html: product.fit_notes }} />
+                    </div>
                   </div>
                 </div>
               )}
@@ -619,6 +640,30 @@ export default function ProductPage() {
                 className="max-h-full object-contain"
               />
             </div>
+          </div>
+        </div>
+      )}
+      {recentlyViewed.length > 1 && (
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <h2 className="text-2xl md:text-3xl font-heading font-light tracking-tight mb-6">Vistos recientemente</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {recentlyViewed.map((p) => (
+              <Link key={p.id} to={`/producto/${p.slug || p.id}`} className="group cursor-pointer">
+                <div className="relative overflow-hidden aspect-[2/3] bg-gray-100 mb-3">
+                  {p.images?.[0] && (
+                    <img
+                      alt={p.name}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      src={p.images[0]}
+                    />
+                  )}
+                </div>
+                <h3 className="text-sm font-menu font-medium text-gray-800 truncate">{p.name}</h3>
+                <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
+                  ${p.price?.toLocaleString('es-CO')}
+                </p>
+              </Link>
+            ))}
           </div>
         </div>
       )}
