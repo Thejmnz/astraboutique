@@ -10,12 +10,17 @@ export default function Header() {
   const { wishlistCount, setIsWishlistOpen } = useWishlist()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [menuKey, setMenuKey] = useState(0)
   const [searchKey, setSearchKey] = useState(0)
   const [randomProducts, setRandomProducts] = useState([])
   const [searchResults, setSearchResults] = useState([])
   const [searching, setSearching] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     if (searchOpen) {
@@ -157,6 +162,7 @@ export default function Header() {
         />
       )}
 
+      {mounted && (
       <div 
         className={`fixed top-0 left-0 h-full w-full z-[9999] md:hidden transform transition-transform duration-500 ease-out ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
@@ -296,6 +302,7 @@ export default function Header() {
           </div>
         </div>
       </div>
+      )}
       {searchOpen && (
         <div 
           className="fixed inset-0 bg-black/20 z-[9998]"
