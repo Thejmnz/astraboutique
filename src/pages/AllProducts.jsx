@@ -10,13 +10,13 @@ export default function AllProducts() {
   const [selectedColor, setSelectedColor] = useState(null)
   const [selectedSize, setSelectedSize] = useState(null)
   const [searchParams] = useSearchParams()
-  const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'newest')
+  const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'all')
   const [availableSizes, setAvailableSizes] = useState([])
   const [showFilters, setShowFilters] = useState(false)
   const { isInWishlist, toggleWishlist } = useWishlist()
 
   useEffect(() => {
-    const sort = searchParams.get('sort') || 'newest'
+    const sort = searchParams.get('sort') || 'all'
     setSortBy(sort)
   }, [searchParams])
 
@@ -67,6 +67,9 @@ export default function AllProducts() {
     }
 
     switch (sortBy) {
+      case 'newest':
+        result = result.filter(p => p.is_new && (Date.now() - new Date(p.created_at).getTime() < 15 * 24 * 60 * 60 * 1000))
+        break
       case 'price_asc':
         result.sort((a, b) => a.price - b.price)
         break
@@ -103,7 +106,7 @@ export default function AllProducts() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl md:text-4xl font-heading font-light tracking-tight" style={{ color: '#251e1a' }}>
-              {sortBy === 'price_asc' ? 'Ofertas' : sortBy === 'popular' ? 'Populares' : sortBy === 'newest' ? 'Productos Nuevos' : 'Productos'}
+              {sortBy === 'price_asc' ? 'Ofertas' : sortBy === 'popular' ? 'Populares' : sortBy === 'newest' ? 'Nuevos' : 'Productos'}
             </h1>
             <p className="text-sm text-gray-500 font-menu mt-1">{filtered.length} productos</p>
           </div>
