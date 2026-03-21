@@ -92,17 +92,7 @@ export default function Header() {
     }
   }, [mobileMenuOpen])
 
-  useEffect(() => {
-    if (searchOpen) {
-      document.body.style.overflow = 'hidden'
-      setSearchKey(prev => prev + 1)
-    } else {
-      document.body.style.overflow = 'unset'
-    }
-    return () => {
-      document.body.style.overflow = 'unset'
-    }
-  }, [searchOpen])
+  if (!mounted) return null
 
   return (
     <header 
@@ -162,7 +152,6 @@ export default function Header() {
         />
       )}
 
-      {mounted && (
       <div 
         className={`fixed top-0 left-0 h-full w-full z-[9999] md:hidden transform transition-transform duration-500 ease-out ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
