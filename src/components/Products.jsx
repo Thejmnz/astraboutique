@@ -50,16 +50,21 @@ export default function Products() {
                     src={product.images[0]}
                   />
                 )}
-                  {product.is_new && (
+                  {product.is_new && (Date.now() - new Date(product.created_at).getTime() < 15 * 24 * 60 * 60 * 1000) && (
                     <span className="absolute top-4 left-4 bg-primary text-white text-[10px] px-3 py-1 rounded-full font-bold tracking-wider">
                       NUEVO
+                    </span>
+                  )}
+                  {product.badge && (
+                    <span className="absolute bottom-4 left-4 bg-white text-primary text-[9px] font-bold tracking-wider border border-primary px-2 py-0.5 rounded-full">
+                      {product.badge.toUpperCase()}
                     </span>
                   )}
                 <button className="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-primary hover:text-white">
                   <Heart size={16} strokeWidth={0.75} />
                 </button>
               </div>
-              <div className="flex flex-col pl-4">
+              <div className="flex flex-col">
                 <h3 className="text-sm font-medium text-gray-800 font-menu">
                   {product.name}
                 </h3>
@@ -67,11 +72,6 @@ export default function Products() {
                   <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
                     ${product.price?.toLocaleString('es-CO')}
                   </p>
-                  {product.badge && (
-                    <span className="text-[9px] font-bold tracking-wider text-primary border border-primary px-2 py-0.5 rounded-full">
-                      {product.badge.toUpperCase()}
-                    </span>
-                  )}
                 </div>
               </div>
             </Link>

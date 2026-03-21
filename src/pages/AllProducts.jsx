@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { Heart, SlidersHorizontal, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useWishlist } from '../context/WishlistContext'
@@ -9,7 +9,8 @@ export default function AllProducts() {
   const [loading, setLoading] = useState(true)
   const [selectedColor, setSelectedColor] = useState(null)
   const [selectedSize, setSelectedSize] = useState(null)
-  const [sortBy, setSortBy] = useState('newest')
+  const [searchParams] = useSearchParams()
+  const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'newest')
   const [availableSizes, setAvailableSizes] = useState([])
   const [showFilters, setShowFilters] = useState(false)
   const { isInWishlist, toggleWishlist } = useWishlist()
@@ -94,7 +95,7 @@ export default function AllProducts() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl md:text-4xl font-heading font-light tracking-tight" style={{ color: '#251e1a' }}>
-              Productos
+              {sortBy === 'price_asc' ? 'Ofertas' : sortBy === 'newest' ? 'Productos Nuevos' : 'Productos'}
             </h1>
             <p className="text-sm text-gray-500 font-menu mt-1">{filtered.length} productos</p>
           </div>
@@ -213,9 +214,14 @@ export default function AllProducts() {
                       src={product.images[0]}
                     />
                   )}
-                  {product.is_new && (
+                  {product.is_new && (Date.now() - new Date(product.created_at).getTime() < 15 * 24 * 60 * 60 * 1000) && (
                     <span className="absolute top-4 left-4 bg-primary text-white text-[10px] px-3 py-1 rounded-full font-bold tracking-wider">
                       NUEVO
+                    </span>
+                  )}
+                  {product.badge && (
+                    <span className="absolute bottom-4 left-4 bg-white text-primary text-[9px] font-bold tracking-wider border border-primary px-2 py-0.5 rounded-full">
+                      {product.badge.toUpperCase()}
                     </span>
                   )}
                   <button
@@ -231,20 +237,13 @@ export default function AllProducts() {
                     <Heart size={16} strokeWidth={0.75} className={isInWishlist(product.id) ? 'fill-white' : ''} />
                   </button>
                 </div>
-                <div className="flex flex-col pl-1">
-                  <h3 className="text-sm font-medium text-gray-800 font-menu">
-                    {product.name}
-                  </h3>
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-col pl-1">
+                    <h3 className="text-sm font-medium text-gray-800 font-menu">
+                      {product.name}
+                    </h3>
                     <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
                       ${product.price?.toLocaleString('es-CO')}
                     </p>
-                    {product.badge && (
-                      <span className="text-[9px] font-bold tracking-wider text-primary border border-primary px-2 py-0.5 rounded-full">
-                        {product.badge.toUpperCase()}
-                      </span>
-                    )}
-                  </div>
                 </div>
               </Link>
             ))}
