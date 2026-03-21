@@ -450,12 +450,19 @@ export default function ProductPage() {
               <div className="mb-6">
                 <p className="text-[12px] font-medium text-gray-800 mb-2">Color</p>
                 <div className="flex items-center gap-2">
-                  <span 
-                    className="inline-block w-8 h-8 rounded-full overflow-hidden"
-                    style={{ border: '1px solid #A49F9B' }}
-                  >
-                    <img src={product.color} alt="" className="w-full h-full object-cover" />
-                  </span>
+                  {product.color.startsWith('#') ? (
+                    <span 
+                      className="inline-block w-8 h-8 rounded-full"
+                      style={{ backgroundColor: product.color, border: '1px solid #A49F9B' }}
+                    />
+                  ) : (
+                    <span 
+                      className="inline-block w-8 h-8 rounded-full overflow-hidden"
+                      style={{ border: '1px solid #A49F9B' }}
+                    >
+                      <img src={product.color} alt="" className="w-full h-full object-cover" />
+                    </span>
+                  )}
                   {product.color_name && (
                     <span className="text-[12px] text-gray-600">{product.color_name}</span>
                   )}
@@ -516,24 +523,10 @@ export default function ProductPage() {
               )}
 
               {product.fit_notes && (
-                <div className="border-b border-gray-200">
-                  <button
-                    onClick={() => setOpenAccordion(openAccordion === 'fit' ? null : 'fit')}
-                    className="w-full py-2 flex items-center justify-between text-left font-menu"
-                  >
-                    <span className="text-[12px] font-medium text-gray-800">Notas de Ajuste</span>
-                    <span className="text-gray-500 text-lg w-4 flex justify-center">
-                      {openAccordion === 'fit' ? '−' : '+'}
-                    </span>
-                  </button>
-                  <div 
-                    className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                      openAccordion === 'fit' ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                    }`}
-                  >
-                    <div className="pb-2 text-[12px] text-gray-600 font-menu product-notes-display">
-                      <div dangerouslySetInnerHTML={{ __html: product.fit_notes }} />
-                    </div>
+                <div className="border-b border-gray-200 py-2">
+                  <span className="text-[12px] font-medium text-gray-800 font-menu">Notas de Ajuste</span>
+                  <div className="pb-2 text-[12px] text-gray-600 font-menu product-notes-display">
+                    <div dangerouslySetInnerHTML={{ __html: product.fit_notes }} />
                   </div>
                 </div>
               )}
