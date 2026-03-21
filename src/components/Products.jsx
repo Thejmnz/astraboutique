@@ -33,8 +33,8 @@ export default function Products() {
 
   return (
     <section className="py-16 bg-background-light">
-      <div className="w-full px-0">
-        <div className="text-left mb-4 pl-6">
+      <div className="w-full px-4 md:px-8">
+        <div className="text-left mb-4 pl-2 md:pl-0">
           <h2 className="font-medium tracking-tight mb-2 font-heading text-2xl md:text-3xl" style={{ color: '#251e1a' }}>
             Colecciones 2026
           </h2>

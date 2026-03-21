@@ -317,7 +317,7 @@ export default function ProductPage() {
         </div>
       </div>
       
-      <div className="max-w-7xl mx-auto py-8 px-6 lg:px-6">
+      <div className="max-w-7xl mx-auto py-8 px-4 md:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:items-start min-w-0">
           <div className="flex flex-row-reverse gap-4 min-w-0 -mx-6 lg:mx-0">
             <div className="relative flex-1 flex items-center justify-center">
