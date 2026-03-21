@@ -17,7 +17,7 @@ export default function ProductPage() {
   const [showSizeGuide, setShowSizeGuide] = useState(false)
   const [sizeGuideTab, setSizeGuideTab] = useState('medidas')
   const [error, setError] = useState('')
-  const [openAccordion, setOpenAccordion] = useState(null)
+  const [openAccordion, setOpenAccordion] = useState('design')
   const [showLightbox, setShowLightbox] = useState(false)
 
   useEffect(() => {
@@ -325,7 +325,7 @@ export default function ProductPage() {
                 <img
                   src={product.images[selectedImage]}
                   alt={product.name}
-                  className="max-w-full max-h-[92vh] object-contain cursor-pointer hidden lg:block"
+                  className="max-w-full max-h-[95vh] object-contain cursor-pointer hidden lg:block"
                   onClick={() => setShowLightbox(true)}
                 />
               )}
@@ -365,7 +365,7 @@ export default function ProductPage() {
             
             {/* Desktop thumbnails */}
             {product.images?.length > 1 && (
-              <div className="hidden lg:flex flex-col gap-2 shrink-0 max-h-[92vh] overflow-y-auto py-2">
+              <div className="hidden lg:flex flex-col gap-2 shrink-0 py-2">
                 {product.images.map((img, index) => (
                   <button
                     key={index}
@@ -449,15 +449,17 @@ export default function ProductPage() {
             {product.color && (
               <div className="mb-6">
                 <p className="text-[12px] font-medium text-gray-800 mb-2">Color</p>
-                <span 
-                  className="inline-block p-0.5 rounded-full"
-                  style={{ border: '1px solid #A49F9B' }}
-                >
+                <div className="flex items-center gap-2">
                   <span 
-                    className="w-5 h-5 rounded-full block"
-                    style={{ backgroundColor: product.color }}
-                  />
-                </span>
+                    className="inline-block w-8 h-8 rounded-full overflow-hidden"
+                    style={{ border: '1px solid #A49F9B' }}
+                  >
+                    <img src={product.color} alt="" className="w-full h-full object-cover" />
+                  </span>
+                  {product.color_name && (
+                    <span className="text-[12px] text-gray-600">{product.color_name}</span>
+                  )}
+                </div>
               </div>
             )}
 
@@ -542,7 +544,7 @@ export default function ProductPage() {
                     onClick={() => setOpenAccordion(openAccordion === 'care' ? null : 'care')}
                     className="w-full py-2 flex items-center justify-between text-left font-menu"
                   >
-                    <span className="text-[12px] font-medium text-gray-800">Fabricación y Cuidado</span>
+                    <span className="text-[12px] font-medium text-gray-800">Cuidado</span>
                     <span className="text-gray-500 text-lg w-4 flex justify-center">
                       {openAccordion === 'care' ? '−' : '+'}
                     </span>
@@ -577,7 +579,7 @@ export default function ProductPage() {
           <div className="flex items-center h-full w-full justify-center">
             {/* Thumbnails sidebar - desktop only */}
             {product.images?.length > 1 && (
-              <div className="hidden md:flex flex-col gap-2 h-full py-8 overflow-y-auto">
+              <div className="hidden md:flex flex-col gap-2 h-full py-8">
                 {product.images.map((img, index) => (
                   <button
                     key={index}

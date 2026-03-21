@@ -5,27 +5,6 @@ import AdminLayout from './AdminLayout'
 import { X, Upload, Plus, Image as ImageIcon, GripVertical } from 'lucide-react'
 import RichTextEditor from '../../components/RichTextEditor'
 
-const COLORS = [
-  { name: 'Negro', hex: '#000000' },
-  { name: 'Blanco', hex: '#FFFFFF' },
-  { name: 'Gris', hex: '#6B7280' },
-  { name: 'Rojo', hex: '#EF4444' },
-  { name: 'Rosa', hex: '#EC4899' },
-  { name: 'Naranja', hex: '#F97316' },
-  { name: 'Amarillo', hex: '#EAB308' },
-  { name: 'Verde', hex: '#22C55E' },
-  { name: 'Azul', hex: '#3B82F6' },
-  { name: 'Morado', hex: '#8B5CF6' },
-  { name: 'Marrón', hex: '#92400E' },
-  { name: 'Beige', hex: '#D4B896' },
-  { name: 'Nude', hex: '#E8C4A2' },
-  { name: 'Dorado', hex: '#CAA247' },
-  { name: 'Plata', hex: '#C0C0C0' },
-  { name: 'Azul Marino', hex: '#1E3A5A' },
-  { name: 'Verde Oliva', hex: '#556B2F' },
-  { name: 'Borgoña', hex: '#800020' },
-]
-
 const generateSlug = (name) => {
   return name
     .toLowerCase()
@@ -137,6 +116,34 @@ export default function AddProduct() {
     setFormData({ ...formData, sizes: newSizes })
   }
 
+  const handleColorImageUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    const { convertToWebP } = await import('../../lib/convertToWebP')
+    const webpFile = await convertToWebP(file)
+    const fileName = `colors/${Date.now()}-${Math.random().toString(36).substring(7)}.webp`
+    const filePath = `products/${fileName}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('products')
+      .upload(filePath, webpFile)
+
+    if (uploadError) {
+      alert('Error al subir imagen de color: ' + uploadError.message)
+      setUploading(false)
+      return
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('products')
+      .getPublicUrl(filePath)
+
+    setFormData({ ...formData, color: publicUrl })
+    setUploading(false)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -150,6 +157,7 @@ export default function AddProduct() {
         slug: slug,
         price: parseInt(formData.price),
         color: formData.color,
+        color_name: formData.colorName,
         description: formData.description,
         images: formData.images,
         is_new: formData.isNew,
@@ -281,38 +289,49 @@ export default function AddProduct() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Color</label>
-                <div className="flex flex-wrap gap-2">
-                  {COLORS.map((c) => (
-                    <button
-                      key={c.hex}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, color: c.hex, colorName: c.name })}
-                      className={`w-8 h-8 rounded-full border-2 transition-all ${
-                        formData.color === c.hex 
-                          ? 'border-primary scale-110' 
-                          : 'border-gray-200 hover:border-gray-300'
-                      } ${c.hex === '#FFFFFF' ? 'ring-1 ring-gray-200' : ''}`}
-                      style={{ backgroundColor: c.hex }}
-                      title={c.name}
-                    />
-                  ))}
-                </div>
-                {formData.color && (
-                  <div className="flex items-center gap-2 mt-3">
-                    <span 
-                      className="w-5 h-5 rounded-full border border-gray-200"
-                      style={{ backgroundColor: formData.color }}
-                    />
-                    <span className="text-sm text-gray-600">{formData.colorName}</span>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, color: '', colorName: '' })}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                      <X size={14} />
-                    </button>
+                <div className="flex items-start gap-4">
+                  <div>
+                    {formData.color ? (
+                      <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 group">
+                        <img src={formData.color} alt="" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, color: '' })}
+                          className="absolute top-0.5 right-0.5 bg-white/80 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X size={12} className="text-gray-600" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:border-gray-300 transition-colors">
+                        {uploading ? (
+                          <p className="text-[10px] text-gray-400">...</p>
+                        ) : (
+                          <Upload size={16} className="text-gray-400" />
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleColorImageUpload}
+                          className="hidden"
+                          disabled={uploading}
+                        />
+                      </label>
+                    )}
                   </div>
-                )}
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      value={formData.colorName}
+                      onChange={(e) => setFormData({ ...formData, colorName: e.target.value })}
+                      placeholder="Nombre del color (ej: Rosa Pastel)"
+                      className="w-full border border-gray-200 rounded-md py-2.5 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                    />
+                    {!formData.color && !uploading && (
+                      <p className="text-xs text-gray-400 mt-1">Sube una imagen del color</p>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -345,7 +364,7 @@ export default function AddProduct() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Fabricación y Cuidado</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Cuidado</label>
                 <RichTextEditor
                   value={formData.fabricationCare}
                   onChange={(value) => setFormData({ ...formData, fabricationCare: value })}

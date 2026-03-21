@@ -100,9 +100,13 @@ export default function ProductsList() {
                       {product.color ? (
                         <div className="flex items-center gap-2">
                           <span 
-                            className="w-5 h-5 rounded-full border border-gray-200"
-                            style={{ backgroundColor: product.color }}
-                          />
+                            className="w-5 h-5 rounded-full overflow-hidden border border-gray-200"
+                          >
+                            <img src={product.color} alt="" className="w-full h-full object-cover" />
+                          </span>
+                          {product.color_name && (
+                            <span className="text-xs text-gray-500">{product.color_name}</span>
+                          )}
                         </div>
                       ) : '-'}
                     </td>

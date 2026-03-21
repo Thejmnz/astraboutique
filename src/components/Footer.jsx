@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 const FacebookIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" className="w-[14px] h-[14px]">
     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
@@ -19,13 +21,13 @@ const TikTokIcon = () => (
 export default function Footer() {
   return (
     <footer className="bg-background-light pt-20 pb-10 mt-12 border-t border-gray-100 font-menu">
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
-        <div className="col-span-1 md:col-span-1">
+      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 mb-20">
+        <div className="col-span-1">
           <div className="mb-6">
             <img src="/logo.png" alt="Astra Boutique" className="h-10" />
           </div>
           <p className="text-gray-500 text-sm leading-relaxed mb-6">
-            Enfoque en calidad y estética.
+            Enfoque en calidad y estetica.
           </p>
           <div className="flex gap-4">
             <div className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary cursor-pointer transition-all">
@@ -40,43 +42,27 @@ export default function Footer() {
           </div>
         </div>
         <div>
-          <h4 className="text-sm font-medium mb-6" style={{ opacity: 0.5 }}>Colecciones</h4>
+          <h4 className="text-sm font-medium mb-6" style={{ opacity: 0.5 }}>Atencion al Cliente</h4>
           <ul className="space-y-4 text-sm text-gray-500">
-            <li><a className="hover:text-primary" href="#">Invierno 2024</a></li>
-            <li><a className="hover:text-primary" href="#">Serie Minimalista</a></li>
-            <li><a className="hover:text-primary" href="#">Edición Limitada</a></li>
-            <li><a className="hover:text-primary" href="#">Accesorios</a></li>
+            <li><Link className="hover:text-primary transition-colors" to="/politicas-devoluciones">Politica de Devoluciones</Link></li>
+            <li><Link className="hover:text-primary transition-colors" to="/politicas-datos">Politica de Datos</Link></li>
+            <li><Link className="hover:text-primary transition-colors" to="/terminos-condiciones">Terminos y Condiciones</Link></li>
           </ul>
         </div>
         <div>
-          <h4 className="text-sm font-medium mb-6" style={{ opacity: 0.5 }}>Atención al Cliente</h4>
+          <h4 className="text-sm font-medium mb-6" style={{ opacity: 0.5 }}>Contactanos</h4>
           <ul className="space-y-4 text-sm text-gray-500">
-            <li><a className="hover:text-primary" href="#">Rastrear Pedido</a></li>
-            <li><a className="hover:text-primary" href="#">Info de Envío</a></li>
-            <li><a className="hover:text-primary" href="#">Política de Devoluciones</a></li>
-            <li><a className="hover:text-primary" href="#">Tarjetas de Regalo</a></li>
+            <li><a className="hover:text-primary transition-colors" href="mailto:hello@astraboutique.com">hello@astraboutique.com</a></li>
+            <li><a className="hover:text-primary transition-colors" href="https://wa.me/573155614103" target="_blank" rel="noopener noreferrer">+57 315 5614103</a></li>
+            <li>Lun - Sab: 8:00 A.M. - 8:00 P.M.</li>
           </ul>
-        </div>
-        <div>
-          <h4 className="text-sm font-medium mb-6" style={{ opacity: 0.5 }}>Únete al Club</h4>
-          <p className="text-sm text-gray-500 mb-4">Regístrate para ofertas exclusivas y novedades.</p>
-          <div className="relative">
-            <input
-              className="w-full bg-background-light border-none rounded-full py-3 px-5 text-xs focus:ring-1 focus:ring-primary focus:outline-none"
-              placeholder="Correo electrónico"
-              type="email"
-            />
-            <button className="absolute right-1 top-1 bottom-1 px-4 bg-primary text-white rounded-full text-xs font-medium hover:bg-accent transition-colors">
-              Unirse
-            </button>
-          </div>
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-6 pt-10 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center text-xs text-gray-400">
-        <p>© 2024 Astra Boutique. Todos los derechos reservados.</p>
+        <p>&copy; 2026 Astra Boutique. Todos los derechos reservados.</p>
         <div className="flex gap-8 mt-4 md:mt-0">
-          <a className="hover:text-primary transition-colors" href="#">Política de Privacidad</a>
-          <a className="hover:text-primary transition-colors" href="#">Términos de Servicio</a>
+          <Link className="hover:text-primary transition-colors" to="/politicas-datos">Politica de Privacidad</Link>
+          <Link className="hover:text-primary transition-colors" to="/terminos-condiciones">Terminos de Servicio</Link>
         </div>
       </div>
     </footer>

@@ -4,27 +4,6 @@ import { Heart, SlidersHorizontal, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useWishlist } from '../context/WishlistContext'
 
-const COLORS = [
-  { name: 'Negro', hex: '#000000' },
-  { name: 'Blanco', hex: '#FFFFFF' },
-  { name: 'Gris', hex: '#6B7280' },
-  { name: 'Rojo', hex: '#EF4444' },
-  { name: 'Rosa', hex: '#EC4899' },
-  { name: 'Naranja', hex: '#F97316' },
-  { name: 'Amarillo', hex: '#EAB308' },
-  { name: 'Verde', hex: '#22C55E' },
-  { name: 'Azul', hex: '#3B82F6' },
-  { name: 'Morado', hex: '#8B5CF6' },
-  { name: 'Marrón', hex: '#92400E' },
-  { name: 'Beige', hex: '#D4B896' },
-  { name: 'Nude', hex: '#E8C4A2' },
-  { name: 'Dorado', hex: '#CAA247' },
-  { name: 'Plata', hex: '#C0C0C0' },
-  { name: 'Azul Marino', hex: '#1E3A5A' },
-  { name: 'Verde Oliva', hex: '#556B2F' },
-  { name: 'Borgoña', hex: '#800020' },
-]
-
 export default function AllProducts() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -59,8 +38,8 @@ export default function AllProducts() {
   const activeFilters = useMemo(() => {
     const f = []
     if (selectedColor) {
-      const c = COLORS.find(c => c.hex === selectedColor)
-      f.push({ label: c?.name || selectedColor, clear: () => setSelectedColor(null) })
+      const product = products.find(p => p.color === selectedColor)
+      f.push({ label: product?.color_name || selectedColor, clear: () => setSelectedColor(null) })
     }
     if (selectedSize) {
       f.push({ label: `Talla ${selectedSize}`, clear: () => setSelectedSize(null) })
@@ -149,25 +128,23 @@ export default function AllProducts() {
               <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-4">Color</h3>
                 <div className="flex flex-wrap gap-2">
-                  {COLORS.map((c) => {
-                    const hasProducts = products.some(p => p.color === c.hex)
-                    if (!hasProducts) return null
-                    return (
+                  {products
+                    .filter((p, i, arr) => p.color && arr.findIndex(x => x.color === p.color) === i)
+                    .map((p) => (
                       <button
-                        key={c.hex}
-                        onClick={() => setSelectedColor(selectedColor === c.hex ? null : c.hex)}
-                        className={`w-8 h-8 rounded-full border-2 transition-all ${
-                          selectedColor === c.hex ? 'ring-2 ring-offset-2 ring-primary scale-110' : 'hover:scale-110'
+                        key={p.color}
+                        onClick={() => setSelectedColor(selectedColor === p.color ? null : p.color)}
+                        className={`w-8 h-8 rounded-full border-2 overflow-hidden transition-all ${
+                          selectedColor === p.color ? 'ring-2 ring-offset-2 ring-primary scale-110' : 'hover:scale-110'
                         }`}
                         style={{
-                          backgroundColor: c.hex,
-                          borderColor: selectedColor === c.hex ? c.hex : '#e5e7eb',
-                          ...(c.hex === '#FFFFFF' ? { ringColor: c.hex, boxShadow: '0 0 0 1px #e5e7eb' } : {})
+                          borderColor: selectedColor === p.color ? '#251E1A' : '#e5e7eb'
                         }}
-                        title={c.name}
-                      />
-                    )
-                  })}
+                        title={p.color_name || 'Color'}
+                      >
+                        <img src={p.color} alt={p.color_name || ''} className="w-full h-full object-cover" />
+                      </button>
+                    ))}
                 </div>
               </div>
 

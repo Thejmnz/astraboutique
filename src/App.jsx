@@ -13,6 +13,9 @@ import CustomerRegister from './pages/CustomerLogin'
 import AccountPage from './pages/AccountPage'
 import BioLinksPage from './pages/BioLinksPage'
 import AllProducts from './pages/AllProducts'
+import PoliticasDevoluciones from './pages/PoliticasDevoluciones'
+import PoliticasTratamientoDatos from './pages/PoliticasTratamientoDatos'
+import TerminosCondiciones from './pages/TerminosCondiciones'
 import Login from './pages/admin/Login'
 import Dashboard from './pages/admin/Dashboard'
 import ProductsList from './pages/admin/ProductsList'
@@ -107,6 +110,9 @@ function App() {
                     <Route path="/login" element={<CustomerLogin />} />
                     <Route path="/registro" element={<CustomerRegister />} />
                     <Route path="/cuenta" element={<AccountPage />} />
+                    <Route path="/politicas-devoluciones" element={<PoliticasDevoluciones />} />
+                    <Route path="/politicas-datos" element={<PoliticasTratamientoDatos />} />
+                    <Route path="/terminos-condiciones" element={<TerminosCondiciones />} />
                   </Routes>
                 </main>
                 <Footer />
