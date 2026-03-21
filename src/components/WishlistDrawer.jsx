@@ -1,9 +1,17 @@
+import { useState, useEffect } from 'react'
 import { X, Heart, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useWishlist } from '../context/WishlistContext'
 
 export default function WishlistDrawer() {
   const { wishlist, isWishlistOpen, setIsWishlistOpen, removeFromWishlist, wishlistCount } = useWishlist()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
 
   return (
     <div

@@ -1,9 +1,17 @@
+import { useState, useEffect } from 'react'
 import { X, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 
 export default function CartDrawer() {
   const { cart, isCartOpen, setIsCartOpen, cartTotal, cartCount, updateQuantity, removeFromCart } = useCart()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
 
   return (
     <div
