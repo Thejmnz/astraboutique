@@ -212,7 +212,7 @@ export default function AllProducts() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-10">
             {filtered.map((product) => (
               <Link key={product.id} to={`/producto/${product.slug || product.id}`} className="group cursor-pointer">
                 <div className="relative overflow-hidden aspect-[2/3] bg-gray-100 mb-4">
