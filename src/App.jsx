@@ -23,6 +23,7 @@ import AddProduct from './pages/admin/AddProduct'
 import EditProduct from './pages/admin/EditProduct'
 import OrdersPage from './pages/admin/OrdersPage'
 import BioLinksAdmin from './pages/admin/BioLinksAdmin'
+import CustomersPage from './pages/admin/CustomersPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import ScrollToTop from './components/ScrollToTop'
 import CartDrawer from './components/CartDrawer'
@@ -84,6 +85,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <BioLinksAdmin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/usuarios"
+            element={
+              <ProtectedRoute>
+                <CustomersPage />
               </ProtectedRoute>
             }
           />

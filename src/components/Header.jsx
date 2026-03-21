@@ -114,7 +114,6 @@ export default function Header() {
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-800 font-menu normal-case flex-shrink-0">
             <Link className="hover:text-primary transition-colors whitespace-nowrap" to="/productos">Productos</Link>
             <Link className="hover:text-primary transition-colors whitespace-nowrap" to="/productos?sort=newest">Nuevos</Link>
-            <Link className="hover:text-primary transition-colors whitespace-nowrap" to="/productos">Populares</Link>
             <Link className="hover:text-primary transition-colors whitespace-nowrap" to="/productos?sort=price_asc">Ofertas</Link>
           </nav>
         </div>
@@ -133,13 +132,7 @@ export default function Header() {
               <span className="absolute -top-1 -right-1 bg-primary text-white text-[8px] w-4 h-4 flex items-center justify-center rounded-full">{cartCount}</span>
             )}
           </button>
-          <button className="relative hover:text-primary transition-colors hidden md:flex" onClick={() => setIsWishlistOpen(true)}>
-            <Heart size={20} strokeWidth={0.75} />
-            {wishlistCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-primary text-white text-[8px] w-4 h-4 flex items-center justify-center rounded-full">{wishlistCount}</span>
-            )}
-          </button>
-          <Link to="/cuenta" className="hover:text-primary transition-colors hidden md:flex">
+          <Link to="/cuenta" className="hover:text-primary transition-colors flex">
             <User size={20} strokeWidth={0.75} />
           </Link>
         </div>
@@ -192,15 +185,6 @@ export default function Header() {
                 Nuevos
               </Link>
               <Link 
-                key={`populares-${menuKey}`}
-                className="text-sm font-medium text-gray-800 font-menu hover:text-primary transition-all transform translate-y-4 opacity-0 animate-fadeInUp normal-case"
-                style={{ animationDelay: '0.6s', animationFillMode: 'forwards' }}
-                to="/productos" 
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Populares
-              </Link>
-              <Link 
                 key={`ofertas-${menuKey}`}
                 className="text-sm font-medium text-gray-800 font-menu hover:text-primary transition-all transform translate-y-4 opacity-0 animate-fadeInUp normal-case"
                 style={{ animationDelay: '0.7s', animationFillMode: 'forwards' }}
@@ -209,6 +193,16 @@ export default function Header() {
               >
                 Ofertas
               </Link>
+              <button 
+                className="text-sm font-medium text-gray-800 font-menu hover:text-primary transition-all transform translate-y-4 opacity-0 animate-fadeInUp normal-case flex items-center gap-2"
+                style={{ animationDelay: '0.8s', animationFillMode: 'forwards' }}
+                onClick={() => { setIsWishlistOpen(true); setMobileMenuOpen(false) }}
+              >
+                Lista de deseos
+                {wishlistCount > 0 && (
+                  <span className="bg-primary text-white text-[8px] w-4 h-4 flex items-center justify-center rounded-full">{wishlistCount}</span>
+                )}
+              </button>
             </nav>
 
             <div className="px-6 mt-10 pt-6 border-t border-gray-100">
@@ -256,21 +250,6 @@ export default function Header() {
                 <a href="#" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary transition-all">
                   <svg viewBox="0 0 24 24" fill="currentColor" className="w-[16px] h-[16px]"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
                 </a>
-              </div>
-            </div>
-
-            <div className="px-6 mt-10 pt-6 border-t border-gray-100">
-              <p className="text-xs font-medium mb-4" style={{ opacity: 0.4 }}>INFORMACION</p>
-              <div className="space-y-3">
-                <Link to="/politicas-devoluciones" className="block text-sm text-gray-600 hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>
-                  Politica de Devoluciones
-                </Link>
-                <Link to="/terminos-condiciones" className="block text-sm text-gray-600 hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>
-                  Terminos y Condiciones
-                </Link>
-                <Link to="/politicas-datos" className="block text-sm text-gray-600 hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>
-                  Politica de Datos
-                </Link>
               </div>
             </div>
           </div>

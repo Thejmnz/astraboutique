@@ -26,6 +26,7 @@ export default function CheckoutPage() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
+    cedula: '',
     email: '',
     phone: '',
     address: '',
@@ -55,6 +56,7 @@ export default function CheckoutPage() {
     const newErrors = {}
     if (!formData.firstName.trim()) newErrors.firstName = 'Nombre requerido'
     if (!formData.lastName.trim()) newErrors.lastName = 'Apellido requerido'
+    if (!formData.cedula.trim()) newErrors.cedula = 'Cedula requerida'
     if (!formData.email.trim()) newErrors.email = 'Email requerido'
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email inválido'
     if (!formData.phone.trim()) newErrors.phone = 'Teléfono requerido'
@@ -88,6 +90,7 @@ export default function CheckoutPage() {
     const order = {
       order_number: newOrderId,
       customer_name: `${formData.firstName} ${formData.lastName}`,
+      customer_cedula: formData.cedula,
       customer_email: formData.email,
       customer_phone: formData.phone,
       shipping_address: formData.shippingMethod === 'pickup' ? null : formData.address,
@@ -221,6 +224,19 @@ export default function CheckoutPage() {
                       }`}
                     />
                     {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-menu text-gray-600 mb-1">Cedula *</label>
+                    <input
+                      type="text"
+                      name="cedula"
+                      value={formData.cedula}
+                      onChange={handleChange}
+                      className={`w-full border p-3 text-sm font-menu focus:outline-none focus:ring-1 focus:ring-[#251E1A] ${
+                        errors.cedula ? 'border-red-500' : 'border-gray-200'
+                      }`}
+                    />
+                    {errors.cedula && <p className="text-red-500 text-xs mt-1">{errors.cedula}</p>}
                   </div>
                   <div>
                     <label className="block text-xs font-menu text-gray-600 mb-1">Email *</label>

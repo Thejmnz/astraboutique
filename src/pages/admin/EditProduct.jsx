@@ -194,7 +194,18 @@ export default function EditProduct() {
         .replace(/(^-|-$)/g, '')
     }
 
-    const slug = generateSlug(formData.name)
+    let slug = generateSlug(formData.name)
+
+    const { data: existing } = await supabase
+      .from('products')
+      .select('id')
+      .eq('slug', slug)
+      .neq('id', id)
+      .single()
+
+    if (existing) {
+      slug = `${slug}-${Date.now().toString(36)}`
+    }
 
     const { error } = await supabase
       .from('products')

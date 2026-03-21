@@ -1,6 +1,6 @@
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Package, Plus, LogOut, LayoutDashboard, ClipboardList, Link2 } from 'lucide-react'
+import { Package, Plus, LogOut, LayoutDashboard, ClipboardList, Link2, Users } from 'lucide-react'
 
 export default function AdminLayout({ children }) {
   const { signOut } = useAuth()
@@ -16,6 +16,7 @@ export default function AdminLayout({ children }) {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
     { id: 'products', label: 'Productos', icon: Package, path: '/admin/productos' },
     { id: 'orders', label: 'Pedidos', icon: ClipboardList, path: '/admin/pedidos' },
+    { id: 'customers', label: 'Usuarios', icon: Users, path: '/admin/usuarios' },
     { id: 'links', label: 'Link en Bio', icon: Link2, path: '/admin/links' },
     { id: 'add-product', label: 'Agregar producto', icon: Plus, path: '/admin/productos/nuevo' },
   ]

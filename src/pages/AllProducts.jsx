@@ -16,6 +16,11 @@ export default function AllProducts() {
   const { isInWishlist, toggleWishlist } = useWishlist()
 
   useEffect(() => {
+    const sort = searchParams.get('sort') || 'newest'
+    setSortBy(sort)
+  }, [searchParams])
+
+  useEffect(() => {
     fetchProducts()
   }, [])
 
@@ -68,6 +73,9 @@ export default function AllProducts() {
       case 'price_desc':
         result.sort((a, b) => b.price - a.price)
         break
+      case 'popular':
+        result.sort((a, b) => (b.views || 0) - (a.views || 0))
+        break
       case 'newest':
       default:
         break
@@ -95,7 +103,7 @@ export default function AllProducts() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl md:text-4xl font-heading font-light tracking-tight" style={{ color: '#251e1a' }}>
-              {sortBy === 'price_asc' ? 'Ofertas' : sortBy === 'newest' ? 'Productos Nuevos' : 'Productos'}
+              {sortBy === 'price_asc' ? 'Ofertas' : sortBy === 'popular' ? 'Populares' : sortBy === 'newest' ? 'Productos Nuevos' : 'Productos'}
             </h1>
             <p className="text-sm text-gray-500 font-menu mt-1">{filtered.length} productos</p>
           </div>
@@ -107,6 +115,7 @@ export default function AllProducts() {
               className="px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-menu bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             >
               <option value="newest">Mas recientes</option>
+              <option value="popular">Populares</option>
               <option value="price_asc">Menor precio</option>
               <option value="price_desc">Mayor precio</option>
             </select>
@@ -210,8 +219,15 @@ export default function AllProducts() {
                   {product.images?.[0] && (
                     <img
                       alt={product.name}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
                       src={product.images[0]}
+                    />
+                  )}
+                  {product.images?.[1] && (
+                    <img
+                      alt={product.name}
+                      className="absolute inset-0 w-full h-full object-cover scale-105 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                      src={product.images[1]}
                     />
                   )}
                   {product.is_new && (Date.now() - new Date(product.created_at).getTime() < 15 * 24 * 60 * 60 * 1000) && (
@@ -237,13 +253,21 @@ export default function AllProducts() {
                     <Heart size={16} strokeWidth={0.75} className={isInWishlist(product.id) ? 'fill-white' : ''} />
                   </button>
                 </div>
-                  <div className="flex flex-col pl-1">
+                  <div className="flex flex-col pl-2 -mt-2">
                     <h3 className="text-sm font-medium text-gray-800 font-menu">
                       {product.name}
                     </h3>
-                    <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
-                      ${product.price?.toLocaleString('es-CO')}
-                    </p>
+                      <div className="flex items-center justify-between gap-2 mt-1.5">
+                      <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
+                        ${product.price?.toLocaleString('es-CO')}
+                      </p>
+                      {product.color && (
+                        <div className="flex items-center gap-1.5">
+                          <img src={product.color} alt="" className="w-3.5 h-3.5 rounded-full object-cover border border-gray-200" />
+                          {product.color_name && <p className="text-xs font-menu text-gray-400">{product.color_name}</p>}
+                        </div>
+                      )}
+                    </div>
                 </div>
               </Link>
             ))}

@@ -33,6 +33,7 @@ export default function ProductPage() {
 
     if (!error && data) {
       setProduct(data)
+      supabase.from('products').update({ views: (data.views || 0) + 1 }).eq('id', data.id)
     }
     setLoading(false)
   }

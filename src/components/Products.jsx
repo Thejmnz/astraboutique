@@ -46,8 +46,15 @@ export default function Products() {
                 {product.images?.[0] && (
                   <img
                     alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
                     src={product.images[0]}
+                  />
+                )}
+                {product.images?.[1] && (
+                  <img
+                    alt={product.name}
+                    className="absolute inset-0 w-full h-full object-cover scale-105 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    src={product.images[1]}
                   />
                 )}
                   {product.is_new && (Date.now() - new Date(product.created_at).getTime() < 15 * 24 * 60 * 60 * 1000) && (
@@ -64,14 +71,20 @@ export default function Products() {
                   <Heart size={16} strokeWidth={0.75} />
                 </button>
               </div>
-              <div className="flex flex-col">
+              <div className="flex flex-col pl-2 -mt-2">
                 <h3 className="text-sm font-medium text-gray-800 font-menu">
                   {product.name}
                 </h3>
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center justify-between gap-2 mt-1.5">
                   <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
                     ${product.price?.toLocaleString('es-CO')}
                   </p>
+                  {product.color && (
+                    <div className="flex items-center gap-1.5">
+                      <img src={product.color} alt="" className="w-3.5 h-3.5 rounded-full object-cover border border-gray-200" />
+                      {product.color_name && <p className="text-xs font-menu text-gray-400">{product.color_name}</p>}
+                    </div>
+                  )}
                 </div>
               </div>
             </Link>
