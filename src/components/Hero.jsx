@@ -20,12 +20,7 @@ export default function Hero() {
         const newWidth = containerRef.current.offsetWidth
         const newHeight = containerRef.current.offsetHeight
         
-        setDimensions(prev => {
-          if (prev.width !== newWidth) {
-            return { width: newWidth, height: newHeight }
-          }
-          return prev
-        })
+        setDimensions({ width: newWidth, height: newHeight })
       }
     }
     updateDimensions()
