@@ -291,7 +291,6 @@ export default function Header() {
           </div>
         </div>
       </div>
-      )}
       {searchOpen && (
         <div 
           className="fixed inset-0 bg-black/20 z-[9998]"
