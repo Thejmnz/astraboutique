@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-12 mb-20">
         <div className="col-span-2 md:col-span-1">
           <div className="mb-6">
-            <img src="/logo.png" alt="Astra Boutique" className="h-10" />
+            <img src="/logo.png" alt="Astra Boutique" className="h-20" />
           </div>
           <p className="text-gray-500 text-sm leading-relaxed">
             Enfoque en calidad y estetica.
@@ -25,7 +25,7 @@ export default function Footer() {
           <ul className="space-y-4 text-sm text-gray-500">
             <li><a className="hover:text-primary transition-colors" href="mailto:hello@astraboutique.store">hello@astraboutique.store</a></li>
             <li><a className="hover:text-primary transition-colors" href="https://wa.me/573155614103" target="_blank" rel="noopener noreferrer">+57 315 5614103</a></li>
-            <li>Lun - Sab: 8:00 A.M. - 8:00 P.M.</li>
+            <li>Lun - Sab: 9:00 A.M. - 6:00 P.M.</li>
           </ul>
         </div>
         <div>
