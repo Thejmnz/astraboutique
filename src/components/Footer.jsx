@@ -32,7 +32,7 @@ export default function Footer() {
           <h4 className="text-sm font-medium mb-6" style={{ opacity: 0.5 }}>Socials</h4>
           <ul className="space-y-4 text-sm text-gray-500">
             <li><a className="hover:text-primary transition-colors" href="#" target="_blank" rel="noopener noreferrer">Facebook</a></li>
-            <li><a className="hover:text-primary transition-colors" href="#" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+            <li><a className="hover:text-primary transition-colors" href="https://www.instagram.com/astraboutiquestore/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
             <li><a className="hover:text-primary transition-colors" href="#" target="_blank" rel="noopener noreferrer">TikTok</a></li>
           </ul>
         </div>

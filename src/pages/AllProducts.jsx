@@ -30,6 +30,7 @@ export default function AllProducts() {
     const { data } = await supabase
       .from('products')
       .select('*, product_sizes(*)')
+      .order('sort_order', { ascending: true })
       .order('created_at', { ascending: false })
     setProducts(data || [])
 

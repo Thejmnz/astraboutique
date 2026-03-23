@@ -1,13 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import AdminLayout from './AdminLayout'
-import { Edit, Trash2, Plus } from 'lucide-react'
+import { Edit, Trash2, Plus, GripVertical, Save } from 'lucide-react'
 
 export default function ProductsList() {
   const navigate = useNavigate()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [dragIdx, setDragIdx] = useState(null)
+  const [overIdx, setOverIdx] = useState(null)
+  const dragItem = useRef(null)
 
   useEffect(() => {
     fetchProducts()
@@ -17,6 +22,7 @@ export default function ProductsList() {
     const { data } = await supabase
       .from('products')
       .select('*, product_sizes(*)')
+      .order('sort_order', { ascending: true })
       .order('created_at', { ascending: false })
     setProducts(data || [])
     setLoading(false)
@@ -38,19 +44,79 @@ export default function ProductsList() {
     fetchProducts()
   }
 
+  const handleDragStart = (idx) => {
+    dragItem.current = idx
+    setDragIdx(idx)
+  }
+
+  const handleDragOver = (e, idx) => {
+    e.preventDefault()
+    setOverIdx(idx)
+  }
+
+  const handleDrop = (idx) => {
+    const fromIdx = dragItem.current
+    if (fromIdx === null || fromIdx === idx) {
+      setDragIdx(null)
+      setOverIdx(null)
+      return
+    }
+
+    const updated = [...products]
+    const [moved] = updated.splice(fromIdx, 1)
+    updated.splice(idx, 0, moved)
+    setProducts(updated)
+    setDragIdx(null)
+    setOverIdx(null)
+  }
+
+  const handleDragEnd = () => {
+    dragItem.current = null
+    setDragIdx(null)
+    setOverIdx(null)
+  }
+
+  const handleSaveOrder = async () => {
+    setSaving(true)
+    for (let i = 0; i < products.length; i++) {
+      await supabase.from('products').update({ sort_order: i }).eq('id', products[i].id)
+    }
+    setSaving(false)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+  }
+
+  const hasChanges = products.some((p, i) => p.sort_order !== i)
+
   return (
     <AdminLayout>
       <div className="p-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-display">Productos</h1>
-          <button
-            onClick={() => navigate('/admin/productos/nuevo')}
-            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors"
-          >
-            <Plus size={20} />
-            <span>Agregar producto</span>
-          </button>
+          <div className="flex items-center gap-3">
+            {hasChanges && (
+              <button
+                onClick={handleSaveOrder}
+                disabled={saving}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium text-white transition-all ${
+                  saved ? 'bg-green-600' : 'bg-gray-800 hover:bg-gray-700'
+                }`}
+              >
+                <Save size={16} />
+                {saving ? 'Guardando...' : saved ? 'Guardado!' : 'Guardar orden'}
+              </button>
+            )}
+            <button
+              onClick={() => navigate('/admin/productos/nuevo')}
+              className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors"
+            >
+              <Plus size={20} />
+              <span>Agregar producto</span>
+            </button>
+          </div>
         </div>
+
+        <p className="text-sm text-gray-400 mb-4">Arrastra las filas para reordenar los productos en la tienda</p>
 
         {loading ? (
           <p>Cargando...</p>
@@ -59,6 +125,7 @@ export default function ProductsList() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
+                  <th className="w-10 px-2 py-4"></th>
                   <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Producto</th>
                   <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Precio</th>
                   <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Color</th>
@@ -67,8 +134,21 @@ export default function ProductsList() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {products.map((product) => (
-                  <tr key={product.id} className="hover:bg-gray-50">
+                {products.map((product, idx) => (
+                  <tr
+                    key={product.id}
+                    className={`hover:bg-gray-50 cursor-grab active:cursor-grabbing transition-colors ${
+                      dragIdx === idx ? 'opacity-50 bg-blue-50' : ''
+                    } ${overIdx === idx && dragIdx !== idx ? 'border-t-2 border-t-blue-500' : ''}`}
+                    draggable
+                    onDragStart={() => handleDragStart(idx)}
+                    onDragOver={(e) => handleDragOver(e, idx)}
+                    onDrop={() => handleDrop(idx)}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <td className="px-2 py-4">
+                      <GripVertical size={16} className="text-gray-300" />
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
                         <div className="w-16 h-20 bg-gray-100 rounded overflow-hidden flex-shrink-0 relative">

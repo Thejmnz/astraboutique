@@ -5,28 +5,26 @@ import { useCart } from '../context/CartContext'
 
 export default function CartDrawer() {
   const { cart, isCartOpen, setIsCartOpen, cartTotal, cartCount, updateQuantity, removeFromCart } = useCart()
-  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    if (isCartOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [isCartOpen])
 
-  if (!mounted) return null
+  if (!isCartOpen) return null
 
   return (
-    <div
-      className={`fixed inset-0 z-[10000] transition-opacity duration-300 ${
-        isCartOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-      }`}
-    >
+    <div className="fixed inset-0 z-[10000]">
       <div
         className="absolute inset-0 bg-black/50"
         onClick={() => setIsCartOpen(false)}
       />
       <div
-        className={`absolute top-0 right-0 h-full w-full md:w-[450px] bg-white transform transition-transform duration-300 flex flex-col ${
-          isCartOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className="absolute top-0 right-0 h-full w-full md:w-[450px] bg-white transform transition-transform duration-300 flex flex-col translate-x-0"
       >
         <div className="p-6 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center justify-between">
