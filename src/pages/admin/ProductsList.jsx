@@ -158,11 +158,6 @@ export default function ProductsList() {
                               className="w-full h-full object-cover"
                             />
                           )}
-                          {product.is_new && (
-                            <span className="absolute top-1 left-1 bg-primary text-white text-[10px] px-2 py-0.5 font-bold">
-                              NUEVO
-                            </span>
-                          )}
                         </div>
                         <div>
                           <p className="font-medium text-gray-800">{product.name}</p>
