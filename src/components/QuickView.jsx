@@ -43,7 +43,7 @@ export default function QuickView({ product, onClose }) {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-white max-w-3xl w-full max-h-[90vh] overflow-hidden">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 z-10 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow hover:bg-gray-100 transition-colors"
@@ -51,14 +51,13 @@ export default function QuickView({ product, onClose }) {
           <X size={16} />
         </button>
 
-        <div className="grid grid-cols-1 md:grid-cols-2">
-          <div className="relative aspect-[2/3] bg-gray-100">
+        <div className="grid grid-cols-1 md:grid-cols-2 md:h-[85vh]">
+          <div className="relative aspect-[2/3] md:aspect-auto bg-gray-100 overflow-hidden">
             {product.images?.[selectedImage] && (
               <img
                 src={product.images[selectedImage]}
                 alt={product.name}
-                className="w-full h-full object-cover"
-                style={{ minHeight: '100%' }}
+                className="absolute inset-0 w-full h-full object-cover"
               />
             )}
             {product.images?.length > 1 && (
@@ -88,7 +87,7 @@ export default function QuickView({ product, onClose }) {
             )}
           </div>
 
-          <div className="p-6 md:p-8 flex flex-col justify-center">
+          <div className="p-6 md:p-8 flex flex-col justify-center md:overflow-y-auto">
             <h2 className="text-2xl font-heading font-light tracking-tight mb-2">{product.name}</h2>
             <p className="text-lg font-menu mb-4">${product.price?.toLocaleString('es-CO')}</p>
 
