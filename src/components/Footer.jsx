@@ -3,14 +3,12 @@ import { Link } from 'react-router-dom'
 export default function Footer() {
   return (
     <footer className="bg-background-light pt-20 pb-10 mt-12 border-t border-gray-100 font-menu">
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-12 mb-20">
-        <div className="col-span-2 md:col-span-1">
+      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 text-center md:grid-cols-4 md:text-left gap-10 mb-20">
+        <div className="md:col-span-1">
           <div className="mb-6">
-            <img src="/logo.png" alt="Astra Boutique" className="h-20" />
+            <img src="/logo.png" alt="Astra Boutique" className="h-14 md:h-20 mx-auto md:mx-0" />
           </div>
-          <p className="text-gray-500 text-sm leading-relaxed">
-            Enfoque en calidad y estetica.
-          </p>
+
         </div>
         <div>
           <h4 className="text-sm font-medium mb-6" style={{ opacity: 0.5 }}>Atencion al Cliente</h4>
