@@ -114,7 +114,6 @@ export default function Header() {
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-800 font-menu normal-case flex-shrink-0">
             <Link className="hover:text-primary transition-colors whitespace-nowrap" to="/productos">Productos</Link>
             <Link className="hover:text-primary transition-colors whitespace-nowrap" to="/productos?sort=newest">Nuevos</Link>
-            <Link className="hover:text-primary transition-colors whitespace-nowrap" to="/productos?sort=price_asc">Ofertas</Link>
           </nav>
         </div>
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
@@ -183,15 +182,6 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Nuevos
-              </Link>
-              <Link 
-                key={`ofertas-${menuKey}`}
-                className="text-sm font-medium text-gray-800 font-menu hover:text-primary transition-all transform translate-y-4 opacity-0 animate-fadeInUp normal-case"
-                style={{ animationDelay: '0.7s', animationFillMode: 'forwards' }}
-                to="/productos?sort=price_asc" 
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Ofertas
               </Link>
               <button 
                 className="text-sm font-medium text-gray-800 font-menu hover:text-primary transition-all transform translate-y-4 opacity-0 animate-fadeInUp normal-case flex items-center gap-2"

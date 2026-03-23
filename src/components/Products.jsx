@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Heart, ChevronRight } from 'lucide-react'
+import { Heart, ChevronRight, Eye } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import QuickView from './QuickView'
 
 export default function Products() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [quickViewProduct, setQuickViewProduct] = useState(null)
 
   useEffect(() => {
     fetchProducts()
@@ -70,6 +72,16 @@ export default function Products() {
                 <button className="absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-primary hover:text-white">
                   <Heart size={16} strokeWidth={0.75} />
                 </button>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setQuickViewProduct(product)
+                  }}
+                  className="absolute top-4 right-4 w-10 h-10 bg-white rounded-full items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-primary hover:text-white hidden md:flex"
+                >
+                  <Eye size={16} strokeWidth={0.75} />
+                </button>
               </div>
               <div className="flex flex-col pl-2 -mt-2">
                 <h3 className="text-sm font-medium text-gray-800 font-menu">
@@ -100,6 +112,9 @@ export default function Products() {
           </Link>
         </div>
       </div>
+      {quickViewProduct && (
+        <QuickView product={quickViewProduct} onClose={() => setQuickViewProduct(null)} />
+      )}
     </section>
   )
 }
