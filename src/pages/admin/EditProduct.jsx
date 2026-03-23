@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import AdminLayout from './AdminLayout'
-import { X, Upload, Plus, Trash2, GripVertical } from 'lucide-react'
+import { X, Upload, Plus, Trash2, GripVertical, Check } from 'lucide-react'
 import RichTextEditor from '../../components/RichTextEditor'
 
 export default function EditProduct() {
@@ -12,11 +12,14 @@ export default function EditProduct() {
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [dragIndex, setDragIndex] = useState(null)
+  const [colors, setColors] = useState([])
+  const [showNewColor, setShowNewColor] = useState(false)
+  const [newColorName, setNewColorName] = useState('')
+  const [newColorImage, setNewColorImage] = useState('')
   const [formData, setFormData] = useState({
     name: '',
     price: '',
-    color: '',
-    colorName: '',
+    colorId: '',
     description: '',
     images: [],
     is_new: false,
@@ -29,7 +32,13 @@ export default function EditProduct() {
 
   useEffect(() => {
     fetchProduct()
+    fetchColors()
   }, [id])
+
+  const fetchColors = async () => {
+    const { data } = await supabase.from('colors').select('*').order('name')
+    setColors(data || [])
+  }
 
   const fetchProduct = async () => {
     const { data, error } = await supabase
@@ -47,8 +56,7 @@ export default function EditProduct() {
     setFormData({
       name: data.name || '',
       price: data.price || '',
-      color: data.color || '',
-      colorName: data.color_name || '',
+      colorId: data.color_id || '',
       description: data.description || '',
       images: data.images || [],
       is_new: data.is_new || false,
@@ -171,8 +179,29 @@ export default function EditProduct() {
       .from('products')
       .getPublicUrl(filePath)
 
-    setFormData({ ...formData, color: publicUrl })
+    setNewColorImage(publicUrl)
     setUploading(false)
+  }
+
+  const handleSaveNewColor = async () => {
+    if (!newColorName || !newColorImage) return
+
+    const { data, error } = await supabase
+      .from('colors')
+      .insert([{ name: newColorName, image_url: newColorImage }])
+      .select()
+      .single()
+
+    if (error) {
+      alert('Error al crear color: ' + error.message)
+      return
+    }
+
+    setFormData({ ...formData, colorId: data.id })
+    setColors(prev => [...prev, data])
+    setShowNewColor(false)
+    setNewColorName('')
+    setNewColorImage('')
   }
 
   const handleSizeChange = (index, field, value) => {
@@ -213,8 +242,7 @@ export default function EditProduct() {
         name: formData.name,
         slug,
         price: parseInt(formData.price),
-        color: formData.color,
-        color_name: formData.colorName,
+        color_id: formData.colorId || null,
         description: formData.description,
         images: formData.images,
         is_new: formData.is_new,
@@ -361,49 +389,107 @@ export default function EditProduct() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Color</label>
-                <div className="flex items-start gap-4">
-                  <div>
-                    {formData.color ? (
-                      <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 group">
-                        <img src={formData.color} alt="" className="w-full h-full object-cover" />
+                
+                {colors.length > 0 && (
+                  <div className="mb-3">
+                    <p className="text-xs text-gray-500 mb-2">Seleccionar color existente</p>
+                    <div className="flex flex-wrap gap-2">
+                      {colors.map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => { setFormData({ ...formData, colorId: c.id }); setShowNewColor(false) }}
+                          className={`relative w-12 h-12 rounded-lg overflow-hidden border-2 transition-all ${
+                            formData.colorId === c.id ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <img src={c.image_url} alt={c.name} className="w-full h-full object-cover" />
+                          {formData.colorId === c.id && (
+                            <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                              <Check size={14} className="text-white drop-shadow" />
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {colors.filter(c => formData.colorId === c.id).map(c => (
+                        <span key={c.id} className="text-xs text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">
+                          {c.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {showNewColor ? (
+                  <div className="border border-gray-200 rounded-lg p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium text-gray-700">Nuevo color</p>
+                      <button type="button" onClick={() => setShowNewColor(false)} className="text-gray-400 hover:text-gray-600">
+                        <X size={16} />
+                      </button>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div>
+                        {newColorImage ? (
+                          <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 group">
+                            <img src={newColorImage} alt="" className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => setNewColorImage('')}
+                              className="absolute top-0.5 right-0.5 bg-white/80 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X size={12} className="text-gray-600" />
+                            </button>
+                          </div>
+                        ) : (
+                          <label className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:border-gray-300 transition-colors">
+                            {uploading ? (
+                              <p className="text-[10px] text-gray-400">...</p>
+                            ) : (
+                              <Upload size={16} className="text-gray-400" />
+                            )}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleColorImageUpload}
+                              className="hidden"
+                              disabled={uploading}
+                            />
+                          </label>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          value={newColorName}
+                          onChange={(e) => setNewColorName(e.target.value)}
+                          placeholder="Nombre del color (ej: Rosa Pastel)"
+                          className="w-full border border-gray-200 rounded-md py-2.5 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                        />
                         <button
                           type="button"
-                          onClick={() => setFormData({ ...formData, color: '' })}
-                          className="absolute top-0.5 right-0.5 bg-white/80 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={handleSaveNewColor}
+                          disabled={!newColorName || !newColorImage}
+                          className="mt-2 flex items-center gap-1.5 text-sm text-primary hover:underline disabled:opacity-50 disabled:pointer-events-none"
                         >
-                          <X size={12} className="text-gray-600" />
+                          <Plus size={14} />
+                          Guardar color
                         </button>
                       </div>
-                    ) : (
-                      <label className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:border-gray-300 transition-colors">
-                        {uploading ? (
-                          <p className="text-[10px] text-gray-400">...</p>
-                        ) : (
-                          <Upload size={16} className="text-gray-400" />
-                        )}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleColorImageUpload}
-                          className="hidden"
-                          disabled={uploading}
-                        />
-                      </label>
-                    )}
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      value={formData.colorName}
-                      onChange={(e) => setFormData({ ...formData, colorName: e.target.value })}
-                      placeholder="Nombre del color (ej: Rosa Pastel)"
-                      className="w-full border border-gray-200 rounded-md py-2.5 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
-                    />
-                    {!formData.color && !uploading && (
-                      <p className="text-xs text-gray-400 mt-1">Sube una imagen del color</p>
-                    )}
-                  </div>
-                </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowNewColor(true)}
+                    className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary transition-colors"
+                  >
+                    <Plus size={14} />
+                    Crear nuevo color
+                  </button>
+                )}
               </div>
 
               <div>

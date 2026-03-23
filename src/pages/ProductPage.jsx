@@ -28,7 +28,7 @@ export default function ProductPage() {
   const fetchProduct = async () => {
     const { data, error } = await supabase
       .from('products')
-      .select('*, product_sizes(*)')
+      .select('*, product_sizes(*), colors(*)')
       .eq('slug', slug)
       .single()
 
@@ -454,25 +454,18 @@ export default function ProductPage() {
               </div>
             )}
 
-            {product.color && (
+            {product.colors && (
               <div className="mb-6">
                 <p className="text-[12px] font-medium text-gray-800 mb-2">Color</p>
                 <div className="flex items-center gap-2">
-                  {product.color.startsWith('#') ? (
-                    <span 
-                      className="inline-block w-8 h-8 rounded-full"
-                      style={{ backgroundColor: product.color, border: '1px solid #A49F9B' }}
-                    />
-                  ) : (
-                    <span 
-                      className="inline-block w-8 h-8 rounded-full overflow-hidden"
-                      style={{ border: '1px solid #A49F9B' }}
-                    >
-                      <img src={product.color} alt="" className="w-full h-full object-cover" />
-                    </span>
-                  )}
-                  {product.color_name && (
-                    <span className="text-[12px] text-gray-600">{product.color_name}</span>
+                  <span 
+                    className="inline-block w-8 h-8 rounded-full overflow-hidden"
+                    style={{ border: '1px solid #A49F9B' }}
+                  >
+                    <img src={product.colors.image_url} alt="" className="w-full h-full object-cover" />
+                  </span>
+                  {product.colors.name && (
+                    <span className="text-[12px] text-gray-600">{product.colors.name}</span>
                   )}
                 </div>
               </div>

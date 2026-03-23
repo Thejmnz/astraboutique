@@ -21,8 +21,7 @@ export default function ProductsList() {
   const fetchProducts = async () => {
     const { data } = await supabase
       .from('products')
-      .select('*, product_sizes(*)')
-      .order('sort_order', { ascending: true })
+      .select('*, product_sizes(*), colors(*)')      .order('sort_order', { ascending: true })
       .order('created_at', { ascending: false })
     setProducts(data || [])
     setLoading(false)
@@ -177,15 +176,15 @@ export default function ProductsList() {
                       ${product.price?.toLocaleString('es-CO')} COP
                     </td>
                     <td className="px-6 py-4">
-                      {product.color ? (
+                      {product.colors ? (
                         <div className="flex items-center gap-2">
                           <span 
                             className="w-5 h-5 rounded-full overflow-hidden border border-gray-200"
                           >
-                            <img src={product.color} alt="" className="w-full h-full object-cover" />
+                            <img src={product.colors.image_url} alt="" className="w-full h-full object-cover" />
                           </span>
-                          {product.color_name && (
-                            <span className="text-xs text-gray-500">{product.color_name}</span>
+                          {product.colors.name && (
+                            <span className="text-xs text-gray-500">{product.colors.name}</span>
                           )}
                         </div>
                       ) : '-'}

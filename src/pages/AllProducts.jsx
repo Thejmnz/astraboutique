@@ -29,7 +29,7 @@ export default function AllProducts() {
   const fetchProducts = async () => {
     const { data } = await supabase
       .from('products')
-      .select('*, product_sizes(*)')
+      .select('*, product_sizes(*), colors(*)')
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: false })
     setProducts(data || [])
@@ -47,8 +47,8 @@ export default function AllProducts() {
   const activeFilters = useMemo(() => {
     const f = []
     if (selectedColor) {
-      const product = products.find(p => p.color === selectedColor)
-      f.push({ label: product?.color_name || selectedColor, clear: () => setSelectedColor(null) })
+      const c = products.find(p => p.colors?.id === selectedColor)?.colors
+      f.push({ label: c?.name || selectedColor, clear: () => setSelectedColor(null) })
     }
     if (selectedSize) {
       f.push({ label: `Talla ${selectedSize}`, clear: () => setSelectedSize(null) })
@@ -60,7 +60,7 @@ export default function AllProducts() {
     let result = [...products]
 
     if (selectedColor) {
-      result = result.filter(p => p.color === selectedColor)
+      result = result.filter(p => p.colors?.id === selectedColor)
     }
 
     if (selectedSize) {
@@ -145,20 +145,19 @@ export default function AllProducts() {
                 <h3 className="text-sm font-medium text-gray-700 mb-4">Color</h3>
                 <div className="flex flex-wrap gap-2">
                   {products
-                    .filter((p, i, arr) => p.color && arr.findIndex(x => x.color === p.color) === i)
+                    .filter((p, i, arr) => p.colors && arr.findIndex(x => x.colors?.id === p.colors?.id) === i)
                     .map((p) => (
                       <button
-                        key={p.color}
-                        onClick={() => setSelectedColor(selectedColor === p.color ? null : p.color)}
-                        className={`w-8 h-8 rounded-full border-2 overflow-hidden transition-all ${
-                          selectedColor === p.color ? 'ring-2 ring-offset-2 ring-primary scale-110' : 'hover:scale-110'
+                        key={p.colors.id}
+                        onClick={() => setSelectedColor(selectedColor === p.colors.id ? null : p.colors.id)}
+                        className={`flex items-center gap-1.5 px-2 py-1 border-2 rounded-full transition-all ${
+                          selectedColor === p.colors.id ? 'ring-2 ring-offset-2 ring-primary border-[#251E1A]' : 'border-gray-200 hover:border-gray-300'
                         }`}
-                        style={{
-                          borderColor: selectedColor === p.color ? '#251E1A' : '#e5e7eb'
-                        }}
-                        title={p.color_name || 'Color'}
                       >
-                        <img src={p.color} alt={p.color_name || ''} className="w-full h-full object-cover" />
+                        <span className={`w-6 h-6 rounded-full overflow-hidden flex-shrink-0`}>
+                          <img src={p.colors.image_url} alt="" className="w-full h-full object-cover" />
+                        </span>
+                        {p.colors.name && <span className="text-xs text-gray-700 font-menu">{p.colors.name}</span>}
                       </button>
                     ))}
                 </div>
@@ -277,10 +276,10 @@ export default function AllProducts() {
                       <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
                         ${product.price?.toLocaleString('es-CO')}
                       </p>
-                      {product.color && (
+                      {product.colors && (
                         <div className="flex items-center gap-1.5">
-                          <img src={product.color} alt="" className="w-3.5 h-3.5 rounded-full object-cover border border-gray-200" />
-                          {product.color_name && <p className="text-xs font-menu text-gray-400">{product.color_name}</p>}
+                          <img src={product.colors.image_url} alt="" className="w-3.5 h-3.5 rounded-full object-cover border border-gray-200" />
+                          {product.colors.name && <p className="text-xs font-menu text-gray-400">{product.colors.name}</p>}
                         </div>
                       )}
                     </div>

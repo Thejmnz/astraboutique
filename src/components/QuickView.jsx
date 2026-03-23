@@ -95,10 +95,10 @@ export default function QuickView({ product, onClose }) {
               <p className="text-gray-500 text-sm font-menu mb-6 leading-relaxed">{product.description}</p>
             )}
 
-            {product.color && (
+            {product.colors && (
               <div className="flex items-center gap-2 mb-4">
-                <img src={product.color} alt="" className="w-4 h-4 rounded-full object-cover border border-gray-200" />
-                {product.color_name && <span className="text-sm text-gray-500 font-menu">{product.color_name}</span>}
+                <img src={product.colors.image_url} alt="" className="w-4 h-4 rounded-full object-cover border border-gray-200" />
+                {product.colors.name && <span className="text-sm text-gray-500 font-menu">{product.colors.name}</span>}
               </div>
             )}
 
