@@ -136,7 +136,7 @@ export default function TerminosCondiciones() {
             Para cualquier consulta relacionada con estos Terminos y Condiciones, puede comunicarse con nosotros a traves de:
           </p>
           <ul className="list-disc pl-6 space-y-2">
-            <li>Correo electronico: hello@astraboutique.com</li>
+            <li>Correo electronico: hello@astraboutique.store</li>
             <li>WhatsApp: +57 315 5614103</li>
             <li>Horario de atencion: lunes a sabado de 8:00 A.M. a 8:00 P.M.</li>
           </ul>

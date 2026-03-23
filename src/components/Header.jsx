@@ -211,13 +211,13 @@ export default function Header() {
                   +57 315 5614103
                 </a>
                 <a
-                  href="mailto:hello@astraboutique.com"
+                  href="mailto:hello@astraboutique.store"
                   className="flex items-center gap-3 text-sm text-gray-600 hover:text-primary transition-colors"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-[16px] h-[16px]">
                     <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/>
                   </svg>
-                  hello@astraboutique.com
+                  hello@astraboutique.store
                 </a>
                 <p className="flex items-center gap-3 text-sm text-gray-600">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-[16px] h-[16px]">

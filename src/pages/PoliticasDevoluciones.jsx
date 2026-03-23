@@ -56,13 +56,13 @@ export default function PoliticasDevoluciones() {
             En el momento de la aprobacion del pago, recibiras un correo electronico con la confirmacion de la orden, posteriormente, por el mismo medio, se te brindara toda la informacion de envio, tiempos de espera para la recepcion y detalles de la transferencia financiera pertinente, ademas de anexar la debida factura de compra para hacer efectivo el cumplimiento de la presente politica de garantia.
           </p>
           <p>
-            En caso de que tengas alguna duda con el envio o si tu pedido no llega dentro del plazo estipulado, comunicate con nosotros a traves de nuestro correo electronico hello@astraboutique.com o WhatsApp +57 315 5614103. Nuestro horario de atencion es de lunes a sabado de 8:00 A.M. a 8:00 P.M.
+            En caso de que tengas alguna duda con el envio o si tu pedido no llega dentro del plazo estipulado, comunicate con nosotros a traves de nuestro correo electronico hello@astraboutique.store o WhatsApp +57 315 5614103. Nuestro horario de atencion es de lunes a sabado de 8:00 A.M. a 8:00 P.M.
           </p>
           <p>
             El producto podra ser recibido o inspeccionado por cualquier persona mayor de edad que habite o este presente en el lugar de entrega, para lo cual bastara la firma de la guia del transportador.
           </p>
           <p>
-            En caso de que el producto tenga senas de danos o rupturas en su empaque en el momento de la entrega, debes registrarlo en la guia del transportador como una observacion, efectuando la devolucion inmediata del producto y comunicarte con nosotros al +57 315 5614103, a traves de nuestro correo hello@astraboutique.com.
+            En caso de que el producto tenga senas de danos o rupturas en su empaque en el momento de la entrega, debes registrarlo en la guia del transportador como una observacion, efectuando la devolucion inmediata del producto y comunicarte con nosotros al +57 315 5614103, a traves de nuestro correo hello@astraboutique.store.
           </p>
 
           <h3 className="font-medium text-gray-800">Costo del Envio.</h3>
@@ -86,7 +86,7 @@ export default function PoliticasDevoluciones() {
             Se coordinara una fecha para recoleccion por la empresa transportadora, ten en cuenta que los gastos de envio para devolver tus productos y ejercer tu derecho de retracto, corren por tu cuenta, ASTRA BOUTIQUE se reserva el derecho de reconocimiento de dicho retracto si el producto fue utilizado aun por primera vez.
           </p>
           <p>
-            Para gestionar la devolucion de tu producto, debes comunicarte con nosotros al +57 315 5614103 (en horario de lunes a sabado de 8:00 A.M. a 8:00 P.M.), a traves de nuestro correo hello@astraboutique.com.
+            Para gestionar la devolucion de tu producto, debes comunicarte con nosotros al +57 315 5614103 (en horario de lunes a sabado de 8:00 A.M. a 8:00 P.M.), a traves de nuestro correo hello@astraboutique.store.
           </p>
           <p>Para solicitar la devolucion de productos debes cumplir con las siguientes condiciones:</p>
           <ul className="list-disc pl-6 space-y-2">
@@ -114,7 +114,7 @@ export default function PoliticasDevoluciones() {
             El cambio debe ser por un valor igual o superior al valor del producto, caso en el cual el cliente pagara el valor excedente si desea el reemplazo de su producto por uno de calidades superiores a las iniciales.
           </p>
           <p>
-            Cambios a traves de la pagina web: podras solicitar el cambio a traves de cualquiera de los medios de contacto: al +57 315 5614103 o a traves de nuestro correo hello@astraboutique.com.
+            Cambios a traves de la pagina web: podras solicitar el cambio a traves de cualquiera de los medios de contacto: al +57 315 5614103 o a traves de nuestro correo hello@astraboutique.store.
           </p>
           <p>
             ASTRA BOUTIQUE dara respuesta a tu solicitud en un plazo no mayor a quince (15) dias habiles, por medio de un correo electronico. En el evento en que proceda el cambio, ASTRA BOUTIQUE solicitara la devolucion del producto por medio del servicio de transporte que este senale.

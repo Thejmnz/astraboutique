@@ -23,7 +23,7 @@ export default function Footer() {
         <div>
           <h4 className="text-sm font-medium mb-6" style={{ opacity: 0.5 }}>Contacto</h4>
           <ul className="space-y-4 text-sm text-gray-500">
-            <li><a className="hover:text-primary transition-colors" href="mailto:hello@astraboutique.com">hello@astraboutique.com</a></li>
+            <li><a className="hover:text-primary transition-colors" href="mailto:hello@astraboutique.store">hello@astraboutique.store</a></li>
             <li><a className="hover:text-primary transition-colors" href="https://wa.me/573155614103" target="_blank" rel="noopener noreferrer">+57 315 5614103</a></li>
             <li>Lun - Sab: 8:00 A.M. - 8:00 P.M.</li>
           </ul>

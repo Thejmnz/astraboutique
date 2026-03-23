@@ -18,7 +18,7 @@ export default function PoliticasTratamientoDatos() {
 
           <h2 className="text-lg font-medium text-gray-900 pt-4">1. Responsable del Tratamiento.</h2>
           <p>
-            El responsable del tratamiento de los datos personales es ASTRA BOUTIQUE, con correo electronico hello@astraboutique.com y telefono +57 315 5614103. Horario de atencion: lunes a sabado de 8:00 A.M. a 8:00 P.M.
+            El responsable del tratamiento de los datos personales es ASTRA BOUTIQUE, con correo electronico hello@astraboutique.store y telefono +57 315 5614103. Horario de atencion: lunes a sabado de 8:00 A.M. a 8:00 P.M.
           </p>
 
           <h2 className="text-lg font-medium text-gray-900 pt-4">2. Datos Personales Recopilados.</h2>
@@ -59,12 +59,12 @@ export default function PoliticasTratamientoDatos() {
             <li><strong>Presentar quejas:</strong> Ante la Superintendencia de Industria y Comercio (SIC) por violaciones a la ley de proteccion de datos.</li>
           </ul>
           <p>
-            Para ejercer cualquiera de estos derechos, puede enviar un correo electronico a hello@astraboutique.com con el asunto "Solicitud de Titular de Datos Personales" incluyendo su nombre completo, numero de cedula y la solicitud especifica.
+            Para ejercer cualquiera de estos derechos, puede enviar un correo electronico a hello@astraboutique.store con el asunto "Solicitud de Titular de Datos Personales" incluyendo su nombre completo, numero de cedula y la solicitud especifica.
           </p>
 
           <h2 className="text-lg font-medium text-gray-900 pt-4">6. Autorizacion para el Tratamiento.</h2>
           <p>
-            Al registrarse en nuestra pagina web, realizar una compra o proporcionar sus datos personales de cualquier otra forma, usted otorga autorizacion expresa a ASTRA BOUTIQUE para el tratamiento de sus datos personales conforme a las finalidades descritas en la presente politica. Esta autorizacion puede ser revocada en cualquier momento mediante solicitud escrita a hello@astraboutique.com.
+            Al registrarse en nuestra pagina web, realizar una compra o proporcionar sus datos personales de cualquier otra forma, usted otorga autorizacion expresa a ASTRA BOUTIQUE para el tratamiento de sus datos personales conforme a las finalidades descritas en la presente politica. Esta autorizacion puede ser revocada en cualquier momento mediante solicitud escrita a hello@astraboutique.store.
           </p>
 
           <h2 className="text-lg font-medium text-gray-900 pt-4">7. Transferencia de Datos.</h2>
@@ -97,7 +97,7 @@ export default function PoliticasTratamientoDatos() {
             Para cualquier consulta, solicitud o queja relacionada con el tratamiento de sus datos personales, puede comunicarse con nosotros a traves de:
           </p>
           <ul className="list-disc pl-6 space-y-2">
-            <li>Correo electronico: hello@astraboutique.com</li>
+            <li>Correo electronico: hello@astraboutique.store</li>
             <li>WhatsApp: +57 315 5614103</li>
             <li>Horario de atencion: lunes a sabado de 8:00 A.M. a 8:00 P.M.</li>
           </ul>

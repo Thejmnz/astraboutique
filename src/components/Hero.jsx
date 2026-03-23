@@ -1,11 +1,14 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { supabase } from '../lib/supabase'
 
 export default function Hero() {
   const containerRef = useRef(null)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
   const [isMobile, setIsMobile] = useState(false)
+  const [callouts, setCallouts] = useState(null)
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -17,10 +20,10 @@ export default function Hero() {
   useEffect(() => {
     const updateDimensions = () => {
       if (containerRef.current) {
-        const newWidth = containerRef.current.offsetWidth
-        const newHeight = containerRef.current.offsetHeight
-        
-        setDimensions({ width: newWidth, height: newHeight })
+        setDimensions({
+          width: containerRef.current.offsetWidth,
+          height: containerRef.current.offsetHeight
+        })
       }
     }
     updateDimensions()
@@ -28,67 +31,32 @@ export default function Hero() {
     return () => window.removeEventListener('resize', updateDimensions)
   }, [])
 
-  const desktopCallouts = [
-    {
-      id: 'cintura',
-      title: 'Ajuste Órbita',
-      description: 'Control de abdomen',
-      pointX: 52.9,
-      pointY: 67.5,
-      boxOffsetX: 165,
-      boxOffsetY: -86
-    },
-    {
-      id: 'bolsillo',
-      title: 'Efecto Zenith',
-      description: 'Realce 100% natural',
-      pointX: 46.9,
-      pointY: 56.9,
-      boxOffsetX: -151,
-      boxOffsetY: -92
-    },
-    {
-      id: 'bota',
-      title: 'Corte Estela',
-      description: 'Longitud adaptable',
-      pointX: 47.8,
-      pointY: 91.2,
-      boxOffsetX: -142,
-      boxOffsetY: -77
+  useEffect(() => {
+    const fetchCallouts = async () => {
+      const { data, error } = await supabase
+        .from('hero_callouts')
+        .select('*')
+        .eq('is_desktop', !isMobile)
+        .order('position', { ascending: true })
+      setCallouts(data || [])
+      setLoaded(true)
     }
+    fetchCallouts()
+  }, [isMobile])
+
+  const fallbackCallouts = isMobile ? [
+    { pointX: 52.9, pointY: 67.5, boxOffsetX: 107, boxOffsetY: -145 },
+    { pointX: 46.9, pointY: 56.9, boxOffsetX: -93, boxOffsetY: -130 },
+    { pointX: 47.8, pointY: 91.2, boxOffsetX: -106, boxOffsetY: -143 },
+  ] : [
+    { pointX: 52.9, pointY: 67.5, boxOffsetX: 165, boxOffsetY: -86 },
+    { pointX: 46.9, pointY: 56.9, boxOffsetX: -151, boxOffsetY: -92 },
+    { pointX: 47.8, pointY: 91.2, boxOffsetX: -142, boxOffsetY: -77 },
   ]
 
-  const mobileCallouts = [
-    {
-      id: 'cintura',
-      title: 'Ajuste Órbita',
-      description: 'Control de abdomen',
-      pointX: 52.9,
-      pointY: 67.5,
-      boxOffsetX: 107,
-      boxOffsetY: -145
-    },
-    {
-      id: 'bolsillo',
-      title: 'Efecto Zenith',
-      description: 'Realce 100% natural',
-      pointX: 46.9,
-      pointY: 56.9,
-      boxOffsetX: -93,
-      boxOffsetY: -130
-    },
-    {
-      id: 'bota',
-      title: 'Corte Estela',
-      description: 'Longitud adaptable',
-      pointX: 47.8,
-      pointY: 91.2,
-      boxOffsetX: -106,
-      boxOffsetY: -143
-    }
-  ]
-
-  const callouts = isMobile ? mobileCallouts : desktopCallouts
+  const activeCallouts = loaded
+    ? (callouts.length > 0 ? callouts : fallbackCallouts)
+    : []
 
   return (
     <section 
@@ -110,11 +78,16 @@ export default function Hero() {
         className="absolute inset-0 w-full h-full pointer-events-none"
         style={{ zIndex: 5 }}
       >
-        {callouts.map((callout) => {
-          const pointXpx = (callout.pointX / 100) * dimensions.width
-          const pointYpx = (callout.pointY / 100) * dimensions.height
-          const boxXpx = pointXpx + callout.boxOffsetX
-          const boxYpx = pointYpx + callout.boxOffsetY
+        {activeCallouts.map((callout) => {
+          const pointX = callout.point_x ?? callout.pointX
+          const pointY = callout.point_y ?? callout.pointY
+          const boxOffsetX = callout.box_offset_x ?? callout.boxOffsetX
+          const boxOffsetY = callout.box_offset_y ?? callout.boxOffsetY
+          
+          const pointXpx = (pointX / 100) * dimensions.width
+          const pointYpx = (pointY / 100) * dimensions.height
+          const boxXpx = pointXpx + boxOffsetX
+          const boxYpx = pointYpx + boxOffsetY
           
           return (
             <path
@@ -128,11 +101,16 @@ export default function Hero() {
         })}
       </svg>
       
-      {callouts.map((callout) => {
-        const pointLeft = `${callout.pointX}%`
-        const pointTop = `${callout.pointY}%`
-        const boxX = `calc(${callout.pointX}% + ${callout.boxOffsetX}px)`
-        const boxY = `calc(${callout.pointY}% + ${callout.boxOffsetY}px)`
+      {activeCallouts.map((callout) => {
+        const pointX = callout.point_x ?? callout.pointX
+        const pointY = callout.point_y ?? callout.pointY
+        const boxOffsetX = callout.box_offset_x ?? callout.boxOffsetX
+        const boxOffsetY = callout.box_offset_y ?? callout.boxOffsetY
+        
+        const pointLeft = `${pointX}%`
+        const pointTop = `${pointY}%`
+        const boxX = `calc(${pointX}% + ${boxOffsetX}px)`
+        const boxY = `calc(${pointY}% + ${boxOffsetY}px)`
         
         return (
           <div key={callout.id}>
