@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext'
 import { supabase } from '../lib/supabase'
 
 const SHIPPING_METHODS = [
-  { id: 'standard', name: 'Envío Estándar', price: 16000, days: '5-7 días hábiles' },
+  { id: 'standard', name: 'Envío Estándar', price: 16000, days: '2-3 días hábiles' },
 ]
 
 const PAYMENT_METHODS = [
