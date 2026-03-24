@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext'
 import { supabase } from '../lib/supabase'
 
 const SHIPPING_METHODS = [
-  { id: 'standard', name: 'Envío Estándar', price: 12000, days: '5-7 días hábiles' },
+  { id: 'standard', name: 'Envío Estándar', price: 16000, days: '5-7 días hábiles' },
   { id: 'express', name: 'Envío Express', price: 25000, days: '2-3 días hábiles' },
   { id: 'pickup', name: 'Recoger en tienda', price: 0, days: 'Disponible en 24h' },
 ]
@@ -558,11 +558,11 @@ function OrderConfirmation({ orderId, formData, total }) {
           </p>
           <div className="bg-gray-50 p-4 rounded-lg text-center mb-4">
             <p className="text-xs font-menu text-gray-500 mb-1">Numero de Nequi</p>
-            <p className="text-2xl font-menu font-bold">316 313 7192</p>
+            <p className="text-2xl font-menu font-bold">319 387 58 98</p>
           </div>
           <div className="bg-gray-50 p-4 rounded-lg text-center mb-4">
             <p className="text-xs font-menu text-gray-500 mb-1">Nombre</p>
-            <p className="text-lg font-menu font-medium">Margarita María Salazar Sánchez</p>
+            <p className="text-lg font-menu font-medium">Juan Esteban Jimenez</p>
           </div>
           <div className="bg-gray-50 p-4 rounded-lg text-center mb-4">
             <p className="text-xs font-menu text-gray-500 mb-1">Monto a pagar</p>
