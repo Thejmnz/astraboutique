@@ -6,8 +6,6 @@ import { supabase } from '../lib/supabase'
 
 const SHIPPING_METHODS = [
   { id: 'standard', name: 'Envío Estándar', price: 16000, days: '5-7 días hábiles' },
-  { id: 'express', name: 'Envío Express', price: 25000, days: '2-3 días hábiles' },
-  { id: 'pickup', name: 'Recoger en tienda', price: 0, days: 'Disponible en 24h' },
 ]
 
 const PAYMENT_METHODS = [
