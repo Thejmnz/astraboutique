@@ -76,7 +76,7 @@ export default function CartDrawer() {
                       {item.name}
                     </h3>
                     <p className="text-xs font-menu text-gray-500 mt-1">
-                      Talla: {item.size}
+                      Talla: {item.size}{item.colorName ? ` · ${item.colorName}` : ''}
                     </p>
                     <p className="text-sm font-menu text-primary mt-1">
                       ${item.price?.toLocaleString('es-CO')} COP
