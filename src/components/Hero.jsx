@@ -67,16 +67,18 @@ export default function Hero() {
         src="/hero.png"
         alt="Hero"
         className="absolute inset-0 w-full h-full object-cover"
+        style={{ zIndex: 1 }}
       />
       <img
         src="/bg2.png"
         alt=""
         className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+        style={{ zIndex: 2 }}
       />
       
       <svg
         className="absolute inset-0 w-full h-full pointer-events-none"
-        style={{ zIndex: 5 }}
+        style={{ zIndex: 3 }}
       >
         {activeCallouts.map((callout) => {
           const pointX = callout.point_x ?? callout.pointX
@@ -115,16 +117,17 @@ export default function Hero() {
         return (
           <div key={callout.id}>
             <div
-              className="absolute w-3 h-3 bg-white rounded-full shadow-lg z-10"
-              style={{ left: pointLeft, top: pointTop, transform: 'translate(-50%, -50%)' }}
+              className="absolute w-3 h-3 bg-white rounded-full shadow-lg"
+              style={{ left: pointLeft, top: pointTop, transform: 'translate(-50%, -50%)', zIndex: 4 }}
             />
             
             <div
-              className="absolute bg-black/60 backdrop-blur-sm px-3 py-2 rounded-lg border border-white/30 whitespace-nowrap z-20"
+              className="absolute bg-black/60 backdrop-blur-sm px-3 py-2 rounded-lg border border-white/30 whitespace-nowrap"
               style={{ 
                 left: boxX,
                 top: boxY,
-                transform: 'translate(-50%, -50%)'
+                transform: 'translate(-50%, -50%)',
+                zIndex: 5
               }}
             >
               <p className="text-white text-xs font-bold">{callout.title}</p>
