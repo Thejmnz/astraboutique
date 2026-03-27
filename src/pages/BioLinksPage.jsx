@@ -39,7 +39,7 @@ export default function BioLinksPage() {
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col items-center justify-start px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
-          <img src="/logo.png" alt="Astra Boutique" className="w-44 mx-auto mb-5" />
+          <img src="/logo-v2.png" alt="Astra Boutique" className="w-44 mx-auto mb-5" />
           <p className="text-sm text-gray-500 font-menu">Moda femenina exclusiva</p>
         </div>
 

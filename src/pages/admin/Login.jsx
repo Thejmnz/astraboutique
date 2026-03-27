@@ -29,7 +29,7 @@ export default function Login() {
     <div className="min-h-screen bg-background-light flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <img src="/logo.png" alt="Astra Boutique" className="h-8 mx-auto mb-4" />
+          <img src="/logo-v2.png" alt="Astra Boutique" className="h-8 mx-auto mb-4" />
           <h1 className="text-2xl font-display text-gray-800">Admin Login</h1>
         </div>
 

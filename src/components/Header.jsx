@@ -169,7 +169,7 @@ export default function Header() {
         </div>
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
           <Link to="/" className="flex items-center">
-            <img src="/logo.png" alt="Astra Boutique" className="h-9 md:h-16" />
+            <img src="/logo-v2.png" alt="Astra Boutique" className="h-9 md:h-16" />
           </Link>
         </div>
         <div className="flex items-center gap-5 justify-end flex-shrink-0">
@@ -204,7 +204,7 @@ export default function Header() {
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <Link to="/" className="flex items-center" onClick={() => setMobileMenuOpen(false)}>
-              <img src="/logo.png" alt="Astra Boutique" className="h-9 md:h-16" />
+              <img src="/logo-v2.png" alt="Astra Boutique" className="h-9 md:h-16" />
             </Link>
             <button 
               className="hover:text-primary transition-colors"
@@ -353,7 +353,7 @@ export default function Header() {
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
             <Link to="/" className="flex items-center" onClick={() => setSearchOpen(false)}>
-              <img src="/logo.png" alt="Astra Boutique" className="h-9 md:h-16" />
+              <img src="/logo-v2.png" alt="Astra Boutique" className="h-9 md:h-16" />
             </Link>
             <button 
               className="hover:text-primary transition-colors"

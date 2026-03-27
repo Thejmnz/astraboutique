@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 text-center md:grid-cols-4 md:text-left gap-10 mb-20">
         <div className="md:col-span-1">
           <div className="mb-6">
-            <img src="/logo.png" alt="Astra Boutique" className="h-14 md:h-20 mx-auto md:mx-0" />
+            <img src="/logo-v2.png" alt="Astra Boutique" className="h-14 md:h-20 mx-auto md:mx-0" />
           </div>
 
         </div>
