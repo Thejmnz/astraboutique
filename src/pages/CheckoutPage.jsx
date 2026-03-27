@@ -485,7 +485,7 @@ export default function CheckoutPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-sm font-menu truncate">{item.name}</h3>
-                      <p className="text-xs font-menu text-gray-500">Talla: {item.size}</p>
+                      <p className="text-xs font-menu text-gray-500">Talla: {item.size}{item.colorName ? ` · ${item.colorName}` : ''}</p>
                     </div>
                     <p className="text-sm font-menu">
                       ${(item.price * item.quantity).toLocaleString('es-CO')}
