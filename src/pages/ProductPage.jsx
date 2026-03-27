@@ -90,7 +90,7 @@ export default function ProductPage() {
   const allSizes = product.product_sizes || []
 
   return (
-    <div className="min-h-screen bg-background-light pt-12 pb-16">
+    <div className="min-h-screen bg-background-light pt-24 md:pt-28 pb-16">
       {/* Size Guide Panel */}
       <div 
         className={`fixed inset-0 z-[10000] transition-opacity duration-300 ${
