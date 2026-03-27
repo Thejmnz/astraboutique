@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
 export default function Hero() {
@@ -19,7 +19,7 @@ export default function Hero() {
 
   const [mobileState, setMobileState] = useState(isMobileRef.current)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const updateDimensions = () => {
       if (containerRef.current) {
         setDimensions({
