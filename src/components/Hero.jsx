@@ -62,11 +62,12 @@ export default function Hero() {
     <section 
       ref={containerRef}
       className="relative w-full h-svh overflow-hidden"
+      style={{ backgroundColor: '#251E1A' }}
     >
       <img
         src="/hero.png"
         alt="Hero"
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-contain"
       />
       <img
         src="/bg2.png"
