@@ -11,8 +11,16 @@ function getInitialCart() {
   }
 }
 
+function matchItem(item, productId, size, colorId) {
+  return item.productId === productId && item.size === size && (item.colorId || null) === (colorId || null)
+}
+
 export function CartProvider({ children }) {
-  const [cart, setCart] = useState(getInitialCart)
+  const [cart, setCart] = useState(() => getInitialCart().map(item => ({
+    ...item,
+    colorId: item.colorId || null,
+    colorName: item.colorName || null,
+  })))
   const [isCartOpen, setIsCartOpen] = useState(false)
 
   useEffect(() => {
@@ -20,9 +28,10 @@ export function CartProvider({ children }) {
   }, [cart])
 
   const addToCart = (product, size, quantity = 1, color = null) => {
+    const cId = color?.id || null
     setCart(prevCart => {
       const existingIndex = prevCart.findIndex(
-        item => item.productId === product.id && item.size === size && item.colorId === (color?.id || null)
+        item => matchItem(item, product.id, size, cId)
       )
 
       if (existingIndex > -1) {
@@ -36,7 +45,7 @@ export function CartProvider({ children }) {
         name: product.name,
         price: product.price,
         size: size,
-        colorId: color?.id || null,
+        colorId: cId,
         colorName: color?.name || null,
         colorHex: color?.hex || null,
         colorImage: color?.image_url || null,
@@ -49,7 +58,7 @@ export function CartProvider({ children }) {
 
   const removeFromCart = (productId, size, colorId = null) => {
     setCart(prevCart => prevCart.filter(
-      item => !(item.productId === productId && item.size === size && item.colorId === colorId)
+      item => !matchItem(item, productId, size, colorId)
     ))
   }
 
@@ -59,7 +68,7 @@ export function CartProvider({ children }) {
       return
     }
     setCart(prevCart => prevCart.map(item =>
-      item.productId === productId && item.size === size && item.colorId === colorId
+      matchItem(item, productId, size, colorId)
         ? { ...item, quantity }
         : item
     ))
