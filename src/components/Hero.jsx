@@ -111,7 +111,9 @@ export default function Hero() {
 
         return (
           <div key={callout.id}>
-            <div className="absolute w-3 h-3 bg-white rounded-full shadow-lg" style={{ left: `${pointX}%`, top: `${pointY}%`, transform: 'translate(-50%, -50%)', zIndex: 4 }} />
+            <div className="absolute w-3 h-3 bg-white rounded-full shadow-lg" style={{ left: `${pointX}%`, top: `${pointY}%`, transform: 'translate(-50%, -50%)', zIndex: 4 }}>
+              <span className="absolute inset-0 rounded-full bg-white animate-ping opacity-75" />
+            </div>
             <div className="absolute bg-black/60 backdrop-blur-sm px-3 py-2 rounded-lg border border-white/30 whitespace-nowrap" style={{ left: `calc(${pointX}% + ${boxOffsetX}px)`, top: `calc(${pointY}% + ${boxOffsetY}px)`, transform: 'translate(-50%, -50%)', zIndex: 5 }}>
               <p className="text-white text-xs font-bold">{callout.title}</p>
               <p className="text-white/70 text-[10px]">{callout.description}</p>
