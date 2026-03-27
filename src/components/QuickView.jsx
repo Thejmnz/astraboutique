@@ -95,10 +95,16 @@ export default function QuickView({ product, onClose }) {
               <p className="text-gray-500 text-sm font-menu mb-6 leading-relaxed">{product.description}</p>
             )}
 
-            {product.colors && (
+            {product.colors_list && product.colors_list.length > 0 && (
               <div className="flex items-center gap-2 mb-4">
-                <img src={product.colors.image_url} alt="" className="w-4 h-4 rounded-full object-cover border border-gray-200" />
-                {product.colors.name && <span className="text-sm text-gray-500 font-menu">{product.colors.name}</span>}
+                {product.colors_list.map(c => (
+                  c.hex ? (
+                    <span key={c.id} className="w-4 h-4 rounded-full border border-gray-200 flex-shrink-0" style={{ backgroundColor: c.hex }} />
+                  ) : (
+                    <img key={c.id} src={c.image_url} alt="" className="w-4 h-4 rounded-full object-cover border border-gray-200" />
+                  )
+                ))}
+                {product.colors_list[0].name && <span className="text-sm text-gray-500 font-menu">{product.colors_list.map(c => c.name).join(', ')}</span>}
               </div>
             )}
 

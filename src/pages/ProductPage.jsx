@@ -12,6 +12,7 @@ export default function ProductPage() {
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [selectedSize, setSelectedSize] = useState('')
+  const [selectedColor, setSelectedColor] = useState(null)
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [showSizeGuide, setShowSizeGuide] = useState(false)
@@ -28,12 +29,16 @@ export default function ProductPage() {
   const fetchProduct = async () => {
     const { data, error } = await supabase
       .from('products')
-      .select('*, product_sizes(*), colors(*)')
+      .select('*, product_sizes(*), product_colors(colors(*))')
       .eq('slug', slug)
       .single()
 
     if (!error && data) {
-      setProduct(data)
+      const mapped = {
+        ...data,
+        colors_list: (data.product_colors || []).map(pc => pc.colors).filter(Boolean)
+      }
+      setProduct(mapped)
       supabase.from('products').update({ views: (data.views || 0) + 1 }).eq('id', data.id)
 
       const stored = JSON.parse(localStorage.getItem('recentlyViewed') || '[]')
@@ -65,6 +70,10 @@ export default function ProductPage() {
   }
 
   const handleAddToCart = () => {
+    if (product.colors_list?.length > 0 && !selectedColor) {
+      setError('Por favor selecciona un color')
+      return
+    }
     if (!selectedSize) {
       setError('Por favor selecciona una talla')
       return
@@ -75,7 +84,7 @@ export default function ProductPage() {
       return
     }
     setError('')
-    addToCart(product, selectedSize, quantity)
+    addToCart(product, selectedSize, quantity, selectedColor)
   }
 
   const allSizes = product.product_sizes || []
@@ -454,19 +463,31 @@ export default function ProductPage() {
               </div>
             )}
 
-            {product.colors && (
+            {product.colors_list && product.colors_list.length > 0 && (
               <div className="mb-6">
-                <p className="text-[12px] font-medium text-gray-800 mb-2">Color</p>
-                <div className="flex items-center gap-2">
-                  <span 
-                    className="inline-block w-8 h-8 rounded-full overflow-hidden"
-                    style={{ border: '1px solid #A49F9B' }}
-                  >
-                    <img src={product.colors.image_url} alt="" className="w-full h-full object-cover" />
-                  </span>
-                  {product.colors.name && (
-                    <span className="text-[12px] text-gray-600">{product.colors.name}</span>
-                  )}
+                <p className="text-xs font-medium text-gray-700 mb-2">Colores</p>
+                <div className="flex flex-wrap gap-2">
+                  {product.colors_list.map(c => (
+                    <button
+                      type="button"
+                      key={c.id}
+                      onClick={() => setSelectedColor(c)}
+                      className={`flex items-center gap-1.5 px-2 py-1 border-2 rounded-full transition-all ${
+                        selectedColor?.id === c.id
+                          ? 'ring-2 ring-offset-2 ring-primary border-[#251E1A]'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <span className="w-5 h-5 rounded-full overflow-hidden flex-shrink-0">
+                        {c.hex ? (
+                          <span className="block w-full h-full" style={{ backgroundColor: c.hex }} />
+                        ) : (
+                          <img src={c.image_url} alt="" className="w-full h-full object-cover" />
+                        )}
+                      </span>
+                      {c.name && <span className="text-xs text-gray-700 font-menu">{c.name}</span>}
+                    </button>
+                  ))}
                 </div>
               </div>
             )}

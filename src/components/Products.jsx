@@ -16,11 +16,14 @@ export default function Products() {
   const fetchProducts = async () => {
     const { data } = await supabase
       .from('products')
-      .select('*, product_sizes(*), colors(*)')
+      .select('*, product_sizes(*), product_colors(colors(*))')
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: false })
       .limit(4)
-    setProducts(data || [])
+    setProducts((data || []).map(p => ({
+      ...p,
+      colors_list: (p.product_colors || []).map(pc => pc.colors).filter(Boolean)
+    })))
     setLoading(false)
   }
 
@@ -92,10 +95,15 @@ export default function Products() {
                   <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
                     ${product.price?.toLocaleString('es-CO')}
                   </p>
-                  {product.colors && (
-                    <div className="flex items-center gap-1.5">
-                      <img src={product.colors.image_url} alt="" className="w-3.5 h-3.5 rounded-full object-cover border border-gray-200" />
-                      {product.colors.name && <p className="text-xs font-menu text-gray-400">{product.colors.name}</p>}
+                  {product.colors_list?.length > 0 && (
+                    <div className="flex items-center gap-1">
+                      {product.colors_list.map(c => (
+                        c.hex ? (
+                          <span key={c.id} className="w-3.5 h-3.5 rounded-full border border-gray-200 flex-shrink-0" style={{ backgroundColor: c.hex }} />
+                        ) : (
+                          <img key={c.id} src={c.image_url} alt="" className="w-3.5 h-3.5 rounded-full object-cover border border-gray-200" />
+                        )
+                      ))}
                     </div>
                   )}
                 </div>
@@ -108,7 +116,7 @@ export default function Products() {
             className="inline-flex items-center gap-2 border border-primary text-primary px-8 py-3 rounded-full text-xs font-bold tracking-widest hover:bg-primary hover:text-white transition-all duration-300"
             to="/productos"
           >
-            VER TODOS LOS JEANS
+            VER TODOS LOS PRODUCTOS
             <ChevronRight size={14} strokeWidth={0.75} />
           </Link>
         </div>

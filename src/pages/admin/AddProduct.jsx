@@ -20,14 +20,19 @@ export default function AddProduct() {
   const [uploading, setUploading] = useState(false)
   const [dragIndex, setDragIndex] = useState(null)
   const [colors, setColors] = useState([])
+  const [categories, setCategories] = useState([])
   const [showNewColor, setShowNewColor] = useState(false)
   const [newColorName, setNewColorName] = useState('')
   const [newColorImage, setNewColorImage] = useState('')
+  const [newColorHex, setNewColorHex] = useState('')
+  const [showNewCategory, setShowNewCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
     price: '',
-    colorId: '',
+    colorIds: [],
+    categoryId: '',
     description: '',
     images: [],
     sizes: [{ size: '', stock: '' }],
@@ -40,11 +45,17 @@ export default function AddProduct() {
 
   useEffect(() => {
     fetchColors()
+    fetchCategories()
   }, [])
 
   const fetchColors = async () => {
     const { data } = await supabase.from('colors').select('*').order('name')
     setColors(data || [])
+  }
+
+  const fetchCategories = async () => {
+    const { data } = await supabase.from('categories').select('*').order('sort_order', { ascending: true }).order('name')
+    setCategories(data || [])
   }
 
   const handleImageUpload = async (e) => {
@@ -157,11 +168,11 @@ export default function AddProduct() {
   }
 
   const handleSaveNewColor = async () => {
-    if (!newColorName || !newColorImage) return
+    if (!newColorName || (!newColorImage && !newColorHex)) return
 
     const { data, error } = await supabase
       .from('colors')
-      .insert([{ name: newColorName, image_url: newColorImage }])
+      .insert([{ name: newColorName, image_url: newColorImage || null, hex: newColorHex || null }])
       .select()
       .single()
 
@@ -170,11 +181,33 @@ export default function AddProduct() {
       return
     }
 
-    setFormData({ ...formData, colorId: data.id })
+    setFormData({ ...formData, colorIds: [...formData.colorIds, data.id] })
     setColors(prev => [...prev, data])
     setShowNewColor(false)
     setNewColorName('')
     setNewColorImage('')
+    setNewColorHex('')
+  }
+
+  const handleSaveNewCategory = async () => {
+    if (!newCategoryName.trim()) return
+
+    const slug = generateSlug(newCategoryName)
+    const { data, error } = await supabase
+      .from('categories')
+      .insert([{ name: newCategoryName.trim(), slug }])
+      .select()
+      .single()
+
+    if (error) {
+      alert('Error al crear categoria: ' + error.message)
+      return
+    }
+
+    setFormData({ ...formData, categoryId: data.id })
+    setCategories(prev => [...prev, data])
+    setShowNewCategory(false)
+    setNewCategoryName('')
   }
 
   const handleSubmit = async (e) => {
@@ -189,7 +222,7 @@ export default function AddProduct() {
         name: formData.name,
         slug: slug,
         price: parseInt(formData.price),
-        color_id: formData.colorId || null,
+        category_id: formData.categoryId || null,
         description: formData.description,
         images: formData.images,
         is_new: formData.isNew,
@@ -217,6 +250,12 @@ export default function AddProduct() {
 
     if (sizesToInsert.length > 0) {
       await supabase.from('product_sizes').insert(sizesToInsert)
+    }
+
+    if (formData.colorIds.length > 0) {
+      await supabase.from('product_colors').insert(
+        formData.colorIds.map(colorId => ({ product_id: product.id, color_id: colorId }))
+      )
     }
 
     navigate('/admin/productos')
@@ -320,23 +359,96 @@ export default function AddProduct() {
               </div>
 
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
+                
+                {categories.length > 0 && (
+                  <div className="mb-3">
+                    <select
+                      value={formData.categoryId}
+                      onChange={(e) => { setFormData({ ...formData, categoryId: e.target.value }); setShowNewCategory(false) }}
+                      className="w-full border border-gray-200 rounded-md py-2.5 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                    >
+                      <option value="">Sin categoria</option>
+                      {categories.map((cat) => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {showNewCategory ? (
+                  <div className="border border-gray-200 rounded-lg p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium text-gray-700">Nueva categoria</p>
+                      <button type="button" onClick={() => setShowNewCategory(false)} className="text-gray-400 hover:text-gray-600">
+                        <X size={16} />
+                      </button>
+                    </div>
+                    <div className="flex items-end gap-3">
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          value={newCategoryName}
+                          onChange={(e) => setNewCategoryName(e.target.value)}
+                          placeholder="Nombre (ej: Jeans, Camisetas, Accesorios...)"
+                          className="w-full border border-gray-200 rounded-md py-2.5 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                          autoFocus
+                          onKeyDown={(e) => e.key === 'Enter' && handleSaveNewCategory()}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleSaveNewCategory}
+                        disabled={!newCategoryName.trim()}
+                        className="flex items-center gap-1.5 text-sm text-primary hover:underline disabled:opacity-50 disabled:pointer-events-none"
+                      >
+                        <Plus size={14} />
+                        Guardar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowNewCategory(true)}
+                    className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary transition-colors"
+                  >
+                    <Plus size={14} />
+                    Crear nueva categoria
+                  </button>
+                )}
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Color</label>
                 
                 {colors.length > 0 && (
                   <div className="mb-3">
-                    <p className="text-xs text-gray-500 mb-2">Seleccionar color existente</p>
+                    <p className="text-xs text-gray-500 mb-2">Seleccionar colores (puedes elegir varios)</p>
                     <div className="flex flex-wrap gap-2">
                       {colors.map((c) => (
                         <button
                           key={c.id}
                           type="button"
-                          onClick={() => { setFormData({ ...formData, colorId: c.id }); setShowNewColor(false) }}
+                          onClick={() => {
+                            setFormData({
+                              ...formData,
+                              colorIds: formData.colorIds.includes(c.id)
+                                ? formData.colorIds.filter(id => id !== c.id)
+                                : [...formData.colorIds, c.id]
+                            })
+                            setShowNewColor(false)
+                          }}
                           className={`relative w-12 h-12 rounded-lg overflow-hidden border-2 transition-all ${
-                            formData.colorId === c.id ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200 hover:border-gray-300'
+                            formData.colorIds.includes(c.id) ? 'border-primary ring-2 ring-primary/20' : 'border-gray-200 hover:border-gray-300'
                           }`}
                         >
-                          <img src={c.image_url} alt={c.name} className="w-full h-full object-cover" />
-                          {formData.colorId === c.id && (
+                          {c.hex ? (
+                            <div className="w-full h-full" style={{ backgroundColor: c.hex }} />
+                          ) : (
+                            <img src={c.image_url} alt={c.name} className="w-full h-full object-cover" />
+                          )}
+                          {formData.colorIds.includes(c.id) && (
                             <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
                               <Check size={14} className="text-white drop-shadow" />
                             </div>
@@ -345,7 +457,7 @@ export default function AddProduct() {
                       ))}
                     </div>
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {colors.filter(c => formData.colorId === c.id).map(c => (
+                      {colors.filter(c => formData.colorIds.includes(c.id)).map(c => (
                         <span key={c.id} className="text-xs text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">
                           {c.name}
                         </span>
@@ -362,55 +474,68 @@ export default function AddProduct() {
                         <X size={16} />
                       </button>
                     </div>
-                    <div className="flex items-start gap-4">
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
-                        {newColorImage ? (
-                          <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 group">
-                            <img src={newColorImage} alt="" className="w-full h-full object-cover" />
-                            <button
-                              type="button"
-                              onClick={() => setNewColorImage('')}
-                              className="absolute top-0.5 right-0.5 bg-white/80 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <X size={12} className="text-gray-600" />
-                            </button>
-                          </div>
-                        ) : (
-                          <label className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:border-gray-300 transition-colors">
-                            {uploading ? (
-                              <p className="text-[10px] text-gray-400">...</p>
-                            ) : (
-                              <Upload size={16} className="text-gray-400" />
-                            )}
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleColorImageUpload}
-                              className="hidden"
-                              disabled={uploading}
-                            />
-                          </label>
-                        )}
+                        <label className="block text-xs text-gray-500 mb-1.5">Color HEX</label>
+                        <div className="flex items-center gap-2">
+                          {newColorHex && (
+                            <span className="w-8 h-8 rounded-lg border border-gray-200 flex-shrink-0" style={{ backgroundColor: newColorHex }} />
+                          )}
+                          <input
+                            type="text"
+                            value={newColorHex}
+                            onChange={(e) => setNewColorHex(e.target.value)}
+                            placeholder="#FF5733"
+                            className="flex-1 border border-gray-200 rounded-md py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none font-mono text-sm"
+                          />
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <input
-                          type="text"
-                          value={newColorName}
-                          onChange={(e) => setNewColorName(e.target.value)}
-                          placeholder="Nombre del color (ej: Rosa Pastel)"
-                          className="w-full border border-gray-200 rounded-md py-2.5 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
-                        />
-                        <button
-                          type="button"
-                          onClick={handleSaveNewColor}
-                          disabled={!newColorName || !newColorImage}
-                          className="mt-2 flex items-center gap-1.5 text-sm text-primary hover:underline disabled:opacity-50 disabled:pointer-events-none"
-                        >
-                          <Plus size={14} />
-                          Guardar color
-                        </button>
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1.5">O imagen WebP</label>
+                        <div className="flex items-center gap-2">
+                          {newColorImage ? (
+                            <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
+                              <img src={newColorImage} alt="" className="w-full h-full object-cover" />
+                              <button
+                                type="button"
+                                onClick={() => setNewColorImage('')}
+                                className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+                              >
+                                <X size={10} className="text-white" />
+                              </button>
+                            </div>
+                          ) : (
+                            <label className="w-8 h-8 rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center cursor-pointer hover:border-gray-300 transition-colors flex-shrink-0">
+                              <Upload size={12} className="text-gray-400" />
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleColorImageUpload}
+                                className="hidden"
+                                disabled={uploading}
+                              />
+                            </label>
+                          )}
+                          <span className="text-xs text-gray-400">{uploading ? 'Subiendo...' : 'Opcional'}</span>
+                        </div>
                       </div>
                     </div>
+                    <input
+                      type="text"
+                      value={newColorName}
+                      onChange={(e) => setNewColorName(e.target.value)}
+                      placeholder="Nombre del color (ej: Rosa Pastel)"
+                      className="w-full border border-gray-200 rounded-md py-2.5 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSaveNewColor}
+                      disabled={!newColorName || (!newColorImage && !newColorHex)}
+                      className="flex items-center gap-1.5 text-sm text-primary hover:underline disabled:opacity-50 disabled:pointer-events-none"
+                    >
+                      <Plus size={14} />
+                      Guardar color
+                    </button>
                   </div>
                 ) : (
                   <button

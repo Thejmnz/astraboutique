@@ -7,11 +7,14 @@ import QuickView from '../components/QuickView'
 
 export default function AllProducts() {
   const [products, setProducts] = useState([])
+  const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedColor, setSelectedColor] = useState(null)
   const [selectedSize, setSelectedSize] = useState(null)
+  const [selectedCategory, setSelectedCategory] = useState(null)
   const [searchParams] = useSearchParams()
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'all')
+  const [categorySlug, setCategorySlug] = useState(searchParams.get('categoria') || '')
   const [availableSizes, setAvailableSizes] = useState([])
   const [showFilters, setShowFilters] = useState(false)
   const [quickViewProduct, setQuickViewProduct] = useState(null)
@@ -19,20 +22,42 @@ export default function AllProducts() {
 
   useEffect(() => {
     const sort = searchParams.get('sort') || 'all'
+    const cat = searchParams.get('categoria') || ''
     setSortBy(sort)
+    setCategorySlug(cat)
   }, [searchParams])
 
   useEffect(() => {
     fetchProducts()
+    fetchCategories()
   }, [])
+
+  const fetchCategories = async () => {
+    const { data } = await supabase
+      .from('categories')
+      .select('*')
+      .order('sort_order', { ascending: true })
+      .order('name')
+    setCategories(data || [])
+  }
+
+  useEffect(() => {
+    if (categorySlug && categories.length > 0) {
+      const cat = categories.find(c => c.slug === categorySlug)
+      if (cat) setSelectedCategory(cat.id)
+    }
+  }, [categorySlug, categories])
 
   const fetchProducts = async () => {
     const { data } = await supabase
       .from('products')
-      .select('*, product_sizes(*), colors(*)')
+      .select('*, product_sizes(*), product_colors(colors(*)), categories(*)')
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: false })
-    setProducts(data || [])
+    setProducts((data || []).map(p => ({
+      ...p,
+      colors_list: (p.product_colors || []).map(pc => pc.colors).filter(Boolean)
+    })))
 
     const sizes = new Set()
     ;(data || []).forEach(p => {
@@ -46,21 +71,29 @@ export default function AllProducts() {
 
   const activeFilters = useMemo(() => {
     const f = []
+    if (selectedCategory) {
+      const c = categories.find(cat => cat.id === selectedCategory)
+      f.push({ label: c?.name || selectedCategory, clear: () => setSelectedCategory(null) })
+    }
     if (selectedColor) {
-      const c = products.find(p => p.colors?.id === selectedColor)?.colors
+      const c = products.find(p => p.colors_list?.some(cl => cl.id === selectedColor))?.colors_list?.find(cl => cl.id === selectedColor)
       f.push({ label: c?.name || selectedColor, clear: () => setSelectedColor(null) })
     }
     if (selectedSize) {
       f.push({ label: `Talla ${selectedSize}`, clear: () => setSelectedSize(null) })
     }
     return f
-  }, [selectedColor, selectedSize])
+  }, [selectedCategory, selectedColor, selectedSize, categories, products])
 
   const filtered = useMemo(() => {
     let result = [...products]
 
+    if (selectedCategory) {
+      result = result.filter(p => p.categories?.id === selectedCategory)
+    }
+
     if (selectedColor) {
-      result = result.filter(p => p.colors?.id === selectedColor)
+      result = result.filter(p => p.colors_list?.some(c => c.id === selectedColor))
     }
 
     if (selectedSize) {
@@ -88,9 +121,10 @@ export default function AllProducts() {
     }
 
     return result
-  }, [products, selectedColor, selectedSize, sortBy])
+  }, [products, selectedCategory, selectedColor, selectedSize, sortBy])
 
   const clearAll = () => {
+    setSelectedCategory(null)
     setSelectedColor(null)
     setSelectedSize(null)
   }
@@ -109,7 +143,10 @@ export default function AllProducts() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl md:text-4xl font-heading font-light tracking-tight" style={{ color: '#251e1a' }}>
-              {sortBy === 'price_asc' ? 'Ofertas' : sortBy === 'popular' ? 'Populares' : sortBy === 'newest' ? 'Nuevos' : 'Productos'}
+              {selectedCategory
+                ? categories.find(c => c.id === selectedCategory)?.name || 'Productos'
+                : sortBy === 'price_asc' ? 'Ofertas' : sortBy === 'popular' ? 'Populares' : sortBy === 'newest' ? 'Nuevos' : 'Productos'
+              }
             </h1>
             <p className="text-sm text-gray-500 font-menu mt-1">{filtered.length} productos</p>
           </div>
@@ -140,24 +177,46 @@ export default function AllProducts() {
 
         {showFilters && (
           <div className="bg-white rounded-lg border border-gray-100 p-6 mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div>
+                <h3 className="text-sm font-medium text-gray-700 mb-4">Categoria</h3>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((cat) => (
+                    <button
+                      key={cat.id}
+                      onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
+                      className={`px-3 py-1.5 border-2 rounded-full text-xs font-menu transition-all ${
+                        selectedCategory === cat.id
+                          ? 'border-[#251E1A] bg-[#251E1A] text-white'
+                          : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                      }`}
+                    >
+                      {cat.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-4">Color</h3>
                 <div className="flex flex-wrap gap-2">
-                  {products
-                    .filter((p, i, arr) => p.colors && arr.findIndex(x => x.colors?.id === p.colors?.id) === i)
-                    .map((p) => (
+                  {[...new Map(products.flatMap(p => (p.colors_list || []).map(c => [c.id, c]))).values()]
+                    .map((c) => (
                       <button
-                        key={p.colors.id}
-                        onClick={() => setSelectedColor(selectedColor === p.colors.id ? null : p.colors.id)}
+                        key={c.id}
+                        onClick={() => setSelectedColor(selectedColor === c.id ? null : c.id)}
                         className={`flex items-center gap-1.5 px-2 py-1 border-2 rounded-full transition-all ${
-                          selectedColor === p.colors.id ? 'ring-2 ring-offset-2 ring-primary border-[#251E1A]' : 'border-gray-200 hover:border-gray-300'
+                          selectedColor === c.id ? 'ring-2 ring-offset-2 ring-primary border-[#251E1A]' : 'border-gray-200 hover:border-gray-300'
                         }`}
                       >
-                        <span className={`w-6 h-6 rounded-full overflow-hidden flex-shrink-0`}>
-                          <img src={p.colors.image_url} alt="" className="w-full h-full object-cover" />
+                        <span className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
+                          {c.hex ? (
+                            <span className="block w-full h-full" style={{ backgroundColor: c.hex }} />
+                          ) : (
+                            <img src={c.image_url} alt="" className="w-full h-full object-cover" />
+                          )}
                         </span>
-                        {p.colors.name && <span className="text-xs text-gray-700 font-menu">{p.colors.name}</span>}
+                        {c.name && <span className="text-xs text-gray-700 font-menu">{c.name}</span>}
                       </button>
                     ))}
                 </div>
@@ -276,12 +335,17 @@ export default function AllProducts() {
                       <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
                         ${product.price?.toLocaleString('es-CO')}
                       </p>
-                      {product.colors && (
-                        <div className="flex items-center gap-1.5">
-                          <img src={product.colors.image_url} alt="" className="w-3.5 h-3.5 rounded-full object-cover border border-gray-200" />
-                          {product.colors.name && <p className="text-xs font-menu text-gray-400">{product.colors.name}</p>}
-                        </div>
-                      )}
+                      {product.colors_list?.length > 0 && (
+                         <div className="flex items-center gap-1">
+                           {product.colors_list.map(c => (
+                             c.hex ? (
+                               <span key={c.id} className="w-3.5 h-3.5 rounded-full border border-gray-200 flex-shrink-0" style={{ backgroundColor: c.hex }} />
+                             ) : (
+                               <img key={c.id} src={c.image_url} alt="" className="w-3.5 h-3.5 rounded-full object-cover border border-gray-200" />
+                             )
+                           ))}
+                         </div>
+                       )}
                     </div>
                 </div>
               </Link>

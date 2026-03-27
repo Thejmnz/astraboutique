@@ -13,6 +13,7 @@ import CustomerRegister from './pages/CustomerLogin'
 import AccountPage from './pages/AccountPage'
 import BioLinksPage from './pages/BioLinksPage'
 import AllProducts from './pages/AllProducts'
+import ContactPage from './pages/ContactPage'
 import PoliticasDevoluciones from './pages/PoliticasDevoluciones'
 import PoliticasTratamientoDatos from './pages/PoliticasTratamientoDatos'
 import TerminosCondiciones from './pages/TerminosCondiciones'
@@ -21,6 +22,7 @@ import Dashboard from './pages/admin/Dashboard'
 import ProductsList from './pages/admin/ProductsList'
 import AddProduct from './pages/admin/AddProduct'
 import EditProduct from './pages/admin/EditProduct'
+import CategoriesAdmin from './pages/admin/CategoriesAdmin'
 import OrdersPage from './pages/admin/OrdersPage'
 import BioLinksAdmin from './pages/admin/BioLinksAdmin'
 import CustomersPage from './pages/admin/CustomersPage'
@@ -54,6 +56,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <ProductsList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/categorias"
+            element={
+              <ProtectedRoute>
+                <CategoriesAdmin />
               </ProtectedRoute>
             }
           />
@@ -124,6 +134,7 @@ function App() {
                     />
                     <Route path="/producto/:slug" element={<ProductPage />} />
                     <Route path="/productos" element={<AllProducts />} />
+                    <Route path="/contacto" element={<ContactPage />} />
                     <Route path="/checkout" element={<CheckoutPage />} />
                     <Route path="/login" element={<CustomerLogin />} />
                     <Route path="/registro" element={<CustomerRegister />} />

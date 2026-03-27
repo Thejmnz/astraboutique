@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, ShoppingCart, Heart, User, Menu, X } from 'lucide-react'
+import { Search, ShoppingCart, Heart, User, Menu, X, ChevronDown } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useCart } from '../context/CartContext'
 import { useWishlist } from '../context/WishlistContext'
@@ -16,6 +16,24 @@ export default function Header() {
   const [randomProducts, setRandomProducts] = useState([])
   const [searchResults, setSearchResults] = useState([])
   const [searching, setSearching] = useState(false)
+  const [navCategories, setNavCategories] = useState([])
+  const [productsDropdownOpen, setProductsDropdownOpen] = useState(false)
+  const dropdownTimeout = useRef(null)
+  const dropdownRef = useRef(null)
+
+  useEffect(() => {
+    fetchNavCategories()
+  }, [])
+
+  const fetchNavCategories = async () => {
+    const { data } = await supabase
+      .from('categories')
+      .select('*')
+      .order('sort_order', { ascending: true })
+      .order('name')
+      .limit(6)
+    setNavCategories(data || [])
+  }
 
   useEffect(() => {
     if (searchOpen) {
@@ -75,6 +93,8 @@ export default function Header() {
     return () => clearTimeout(timer)
   }, [searchQuery])
 
+  const [mobileProductsOpen, setMobileProductsOpen] = useState(false)
+
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = 'hidden'
@@ -105,8 +125,46 @@ export default function Header() {
             {mobileMenuOpen ? <X size={20} strokeWidth={0.75} /> : <Menu size={20} strokeWidth={0.75} />}
           </button>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-800 font-menu normal-case flex-shrink-0">
-            <Link className="hover:text-primary transition-colors whitespace-nowrap" to="/productos">Productos</Link>
             <Link className="hover:text-primary transition-colors whitespace-nowrap" to="/productos?sort=newest">Nuevos</Link>
+            <div
+              ref={dropdownRef}
+              className="relative"
+              onMouseEnter={() => { clearTimeout(dropdownTimeout.current); setProductsDropdownOpen(true) }}
+              onMouseLeave={() => { dropdownTimeout.current = setTimeout(() => setProductsDropdownOpen(false), 150) }}
+            >
+              <Link
+                className="hover:text-primary transition-colors whitespace-nowrap flex items-center gap-1"
+                to="/productos"
+                onClick={() => setProductsDropdownOpen(false)}
+              >
+                Productos
+                <ChevronDown size={14} className={`transition-transform duration-200 ${productsDropdownOpen ? 'rotate-180' : ''}`} />
+              </Link>
+              {productsDropdownOpen && navCategories.length > 0 && (
+                <div className="absolute top-full left-0 pt-2 z-50">
+                  <div className="bg-white border border-gray-100 rounded-lg shadow-lg py-2 min-w-[180px]">
+                    <Link
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors whitespace-nowrap"
+                      to="/productos"
+                      onClick={() => setProductsDropdownOpen(false)}
+                    >
+                      Todos
+                    </Link>
+                    {navCategories.map((cat) => (
+                      <Link
+                        key={cat.id}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors whitespace-nowrap"
+                        to={`/productos?categoria=${cat.slug}`}
+                        onClick={() => setProductsDropdownOpen(false)}
+                      >
+                        {cat.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <Link className="hover:text-primary transition-colors whitespace-nowrap" to="/contacto">Contacto</Link>
           </nav>
         </div>
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
@@ -157,28 +215,54 @@ export default function Header() {
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            <nav className="flex flex-col px-6 pt-8 gap-4">
-              <Link 
-                key={`productos-${menuKey}`}
-                className="text-sm font-medium text-gray-800 font-menu hover:text-primary transition-all transform translate-y-4 opacity-0 animate-fadeInUp normal-case"
-                style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}
-                to="/productos" 
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Productos
-              </Link>
+            <nav className="flex flex-col px-6 pt-8 gap-1">
               <Link 
                 key={`nuevos-${menuKey}`}
-                className="text-sm font-medium text-gray-800 font-menu hover:text-primary transition-all transform translate-y-4 opacity-0 animate-fadeInUp normal-case"
-                style={{ animationDelay: '0.5s', animationFillMode: 'forwards' }}
+                className="text-sm font-medium text-gray-800 font-menu hover:text-primary transition-colors normal-case py-2"
                 to="/productos?sort=newest" 
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Nuevos
               </Link>
+              <button
+                className="flex items-center justify-between py-2 text-sm font-medium text-gray-800 font-menu hover:text-primary transition-all normal-case"
+                onClick={() => setMobileProductsOpen(!mobileProductsOpen)}
+              >
+                Productos
+                <ChevronDown size={14} className={`transition-transform duration-200 ${mobileProductsOpen ? 'rotate-180' : ''}`} />
+              </button>
+              <div className={`overflow-hidden transition-all duration-300 ${mobileProductsOpen ? 'max-h-60 pb-2' : 'max-h-0'}`}>
+                <div className="flex flex-col gap-1 pl-3">
+                  <Link 
+                    key={`productos-${menuKey}`}
+                    className="text-sm text-gray-600 font-menu hover:text-primary transition-colors normal-case py-1.5"
+                    to="/productos" 
+                    onClick={() => { setMobileMenuOpen(false); setMobileProductsOpen(false) }}
+                  >
+                    Todos
+                  </Link>
+                  {navCategories.map((cat) => (
+                    <Link
+                      key={`cat-${cat.id}-${menuKey}`}
+                      className="text-sm text-gray-600 font-menu hover:text-primary transition-colors normal-case py-1.5"
+                      to={`/productos?categoria=${cat.slug}`}
+                      onClick={() => { setMobileMenuOpen(false); setMobileProductsOpen(false) }}
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+              <Link 
+                key={`contacto-${menuKey}`}
+                className="text-sm font-medium text-gray-800 font-menu hover:text-primary transition-colors normal-case py-2"
+                to="/contacto"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Contacto
+              </Link>
               <button 
-                className="text-sm font-medium text-gray-800 font-menu hover:text-primary transition-all transform translate-y-4 opacity-0 animate-fadeInUp normal-case flex items-center gap-2"
-                style={{ animationDelay: '0.8s', animationFillMode: 'forwards' }}
+                className="text-sm font-medium text-gray-800 font-menu hover:text-primary transition-all normal-case flex items-center gap-2 py-2"
                 onClick={() => { setIsWishlistOpen(true); setMobileMenuOpen(false) }}
               >
                 Lista de deseos

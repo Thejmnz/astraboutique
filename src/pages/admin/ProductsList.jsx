@@ -21,9 +21,12 @@ export default function ProductsList() {
   const fetchProducts = async () => {
     const { data } = await supabase
       .from('products')
-      .select('*, product_sizes(*), colors(*)')      .order('sort_order', { ascending: true })
+      .select('*, product_sizes(*), product_colors(colors(*)), categories(*)')      .order('sort_order', { ascending: true })
       .order('created_at', { ascending: false })
-    setProducts(data || [])
+    setProducts((data || []).map(p => ({
+      ...p,
+      colors_list: (p.product_colors || []).map(pc => pc.colors).filter(Boolean)
+    })))
     setLoading(false)
   }
 
@@ -127,6 +130,7 @@ export default function ProductsList() {
                   <th className="w-10 px-2 py-4"></th>
                   <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Producto</th>
                   <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Precio</th>
+                  <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Categoria</th>
                   <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Color</th>
                   <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Stock</th>
                   <th className="text-right px-6 py-4 text-sm font-medium text-gray-600">Acciones</th>
@@ -171,16 +175,25 @@ export default function ProductsList() {
                       ${product.price?.toLocaleString('es-CO')} COP
                     </td>
                     <td className="px-6 py-4">
-                      {product.colors ? (
-                        <div className="flex items-center gap-2">
-                          <span 
-                            className="w-5 h-5 rounded-full overflow-hidden border border-gray-200"
-                          >
-                            <img src={product.colors.image_url} alt="" className="w-full h-full object-cover" />
-                          </span>
-                          {product.colors.name && (
-                            <span className="text-xs text-gray-500">{product.colors.name}</span>
-                          )}
+                      {product.categories ? (
+                        <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">{product.categories.name}</span>
+                      ) : '-'}
+                    </td>
+                    <td className="px-6 py-4">
+                      {product.colors_list?.length > 0 ? (
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {product.colors_list.map(c => (
+                            <div key={c.id} className="flex items-center gap-1">
+                              <span className="w-5 h-5 rounded-full overflow-hidden border border-gray-200 flex-shrink-0">
+                                {c.hex ? (
+                                  <span className="block w-full h-full" style={{ backgroundColor: c.hex }} />
+                                ) : (
+                                  <img src={c.image_url} alt="" className="w-full h-full object-cover" />
+                                )}
+                              </span>
+                              <span className="text-xs text-gray-500">{c.name}</span>
+                            </div>
+                          ))}
                         </div>
                       ) : '-'}
                     </td>

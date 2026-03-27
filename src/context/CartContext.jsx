@@ -19,10 +19,10 @@ export function CartProvider({ children }) {
     localStorage.setItem('cart', JSON.stringify(cart))
   }, [cart])
 
-  const addToCart = (product, size, quantity = 1) => {
+  const addToCart = (product, size, quantity = 1, color = null) => {
     setCart(prevCart => {
       const existingIndex = prevCart.findIndex(
-        item => item.productId === product.id && item.size === size
+        item => item.productId === product.id && item.size === size && item.colorId === (color?.id || null)
       )
 
       if (existingIndex > -1) {
@@ -36,6 +36,10 @@ export function CartProvider({ children }) {
         name: product.name,
         price: product.price,
         size: size,
+        colorId: color?.id || null,
+        colorName: color?.name || null,
+        colorHex: color?.hex || null,
+        colorImage: color?.image_url || null,
         image: product.images?.[0],
         quantity: quantity,
       }]
@@ -43,19 +47,19 @@ export function CartProvider({ children }) {
     setIsCartOpen(true)
   }
 
-  const removeFromCart = (productId, size) => {
+  const removeFromCart = (productId, size, colorId = null) => {
     setCart(prevCart => prevCart.filter(
-      item => !(item.productId === productId && item.size === size)
+      item => !(item.productId === productId && item.size === size && item.colorId === colorId)
     ))
   }
 
-  const updateQuantity = (productId, size, quantity) => {
+  const updateQuantity = (productId, size, quantity, colorId = null) => {
     if (quantity <= 0) {
-      removeFromCart(productId, size)
+      removeFromCart(productId, size, colorId)
       return
     }
     setCart(prevCart => prevCart.map(item =>
-      item.productId === productId && item.size === size
+      item.productId === productId && item.size === size && item.colorId === colorId
         ? { ...item, quantity }
         : item
     ))
