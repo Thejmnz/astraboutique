@@ -84,7 +84,7 @@ export default function CartDrawer() {
                     <div className="flex items-center gap-3 mt-2">
                       <div className="flex items-center border border-gray-200">
                         <button
-                          onClick={() => updateQuantity(item.productId, item.size, item.quantity - 1)}
+                          onClick={() => updateQuantity(item.productId, item.size, item.quantity - 1, item.colorId)}
                           className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 transition-colors"
                         >
                           <Minus size={12} strokeWidth={1.5} />
@@ -93,14 +93,14 @@ export default function CartDrawer() {
                           {item.quantity}
                         </span>
                         <button
-                          onClick={() => updateQuantity(item.productId, item.size, item.quantity + 1)}
+                          onClick={() => updateQuantity(item.productId, item.size, item.quantity + 1, item.colorId)}
                           className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 transition-colors"
                         >
                           <Plus size={12} strokeWidth={1.5} />
                         </button>
                       </div>
                       <button
-                        onClick={() => removeFromCart(item.productId, item.size)}
+                        onClick={() => removeFromCart(item.productId, item.size, item.colorId)}
                         className="text-gray-400 hover:text-red-500 transition-colors"
                       >
                         <Trash2 size={16} strokeWidth={1.5} />
