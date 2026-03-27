@@ -30,6 +30,8 @@ export default function Hero() {
     }
     updateDimensions()
     window.addEventListener('resize', updateDimensions)
+    window.scrollTo(0, window.scrollY + 1)
+    setTimeout(() => window.scrollTo(0, window.scrollY), 0)
     return () => window.removeEventListener('resize', updateDimensions)
   }, [])
 
