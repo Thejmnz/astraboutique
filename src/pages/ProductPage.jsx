@@ -657,10 +657,10 @@ export default function ProductPage() {
           </div>
         </div>
       )}
-      {recentlyViewed.length > 1 && (
-        <div className="max-w-7xl mx-auto px-6 py-12">
+      {recentlyViewed.length > 0 && (
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-12">
           <h2 className="text-2xl md:text-3xl font-heading font-light tracking-tight mb-6">Vistos recientemente</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             {recentlyViewed.map((p) => (
               <Link key={p.id} to={`/producto/${p.slug || p.id}`} className="group cursor-pointer">
                 <div className="relative overflow-hidden aspect-[2/3] bg-gray-100 mb-3">
