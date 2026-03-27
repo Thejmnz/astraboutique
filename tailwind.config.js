@@ -19,6 +19,15 @@ export default {
         menu: ['ABCDiatype', 'sans-serif'],
         heading: ['Items', 'sans-serif'],
       },
+      keyframes: {
+        slideIn: {
+          'from': { transform: 'translateX(-100%)' },
+          'to': { transform: 'translateX(0)' },
+        },
+      },
+      animation: {
+        slideIn: 'slideIn 0.3s ease-out',
+      },
     },
   },
   plugins: [],
