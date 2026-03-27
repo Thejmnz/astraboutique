@@ -338,128 +338,128 @@ export default function Header() {
         </div>
       </div>
       {searchOpen && (
-        <div 
-          className="fixed inset-0 bg-black/20 z-[9998]"
-          onClick={() => setSearchOpen(false)}
-        />
-      )}
+        <>
+          <div 
+            className="fixed inset-0 bg-black/20 z-[9998]"
+            onClick={() => setSearchOpen(false)}
+          />
 
-      <div 
-        className={`fixed top-0 left-0 h-full w-full z-[9999] transform transition-opacity duration-500 ease-out ${
-          searchOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-        style={{ backgroundColor: '#F8F5F1' }}
-      >
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-            <Link to="/" className="flex items-center" onClick={() => setSearchOpen(false)}>
-              <img src="/logo-v2.png" alt="Astra Boutique" className="h-9 md:h-16" />
-            </Link>
-            <button 
-              className="hover:text-primary transition-colors"
-              onClick={() => setSearchOpen(false)}
-            >
-              <X size={16} strokeWidth={0.75} />
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto px-6 py-8">
-            <div 
-              key={`search-input-${searchKey}`}
-              className="transform translate-y-4 opacity-0 animate-fadeInUp"
-              style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}
-            >
-              <div className="relative flex items-center mb-12">
-                <Search className="absolute left-4 text-gray-400" size={20} strokeWidth={0.75} />
-                <input 
-                  className="w-full bg-white border border-gray-200 rounded-full py-4 pl-12 pr-4 text-base font-menu focus:ring-1 focus:ring-primary focus:outline-none"
-                  placeholder="Buscar productos..."
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  autoFocus
-                />
+          <div 
+            className="fixed top-0 left-0 h-full w-full z-[9999]"
+            style={{ backgroundColor: '#F8F5F1' }}
+          >
+            <div className="flex flex-col h-full">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                <Link to="/" className="flex items-center" onClick={() => setSearchOpen(false)}>
+                  <img src="/logo-v2.png" alt="Astra Boutique" className="h-9 md:h-16" />
+                </Link>
+                <button 
+                  className="hover:text-primary transition-colors"
+                  onClick={() => setSearchOpen(false)}
+                >
+                  <X size={16} strokeWidth={0.75} />
+                </button>
               </div>
-            </div>
 
-            {searchQuery.trim().length >= 2 && (
-              <div>
-                <h3 className="text-sm font-medium text-gray-800 font-menu mb-6">
-                  {searching ? 'Buscando...' : searchResults.length > 0 ? `Resultados para "${searchQuery}"` : `Sin resultados para "${searchQuery}"`}
-                </h3>
-                {searchResults.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {searchResults.map((product) => (
-                      <Link
-                        key={`result-${product.id}`}
-                        to={`/producto/${product.slug || product.id}`}
-                        onClick={() => setSearchOpen(false)}
-                        className="group cursor-pointer"
-                      >
-                        <div className="relative overflow-hidden aspect-[2/3] bg-gray-100 mb-3">
-                          {product.image && (
-                            <img 
-                              src={product.image} 
-                              alt={product.name}
-                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                            />
-                          )}
-                        </div>
-                        <h3 className="text-sm font-medium text-gray-800 font-menu">{product.name}</h3>
-                        <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
-                          ${product.price?.toLocaleString('es-CO')} COP
-                        </p>
-                      </Link>
-                    ))}
+              <div className="flex-1 overflow-y-auto px-6 py-8">
+                <div 
+                  key={`search-input-${searchKey}`}
+                  className="transform translate-y-4 opacity-0 animate-fadeInUp"
+                  style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}
+                >
+                  <div className="relative flex items-center mb-12">
+                    <Search className="absolute left-4 text-gray-400" size={20} strokeWidth={0.75} />
+                    <input 
+                      className="w-full bg-white border border-gray-200 rounded-full py-4 pl-12 pr-4 text-base font-menu focus:ring-1 focus:ring-primary focus:outline-none"
+                      placeholder="Buscar productos..."
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
+                </div>
+
+                {searchQuery.trim().length >= 2 && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-800 font-menu mb-6">
+                      {searching ? 'Buscando...' : searchResults.length > 0 ? `Resultados para "${searchQuery}"` : `Sin resultados para "${searchQuery}"`}
+                    </h3>
+                    {searchResults.length > 0 && (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {searchResults.map((product) => (
+                          <Link
+                            key={`result-${product.id}`}
+                            to={`/producto/${product.slug || product.id}`}
+                            onClick={() => setSearchOpen(false)}
+                            className="group cursor-pointer"
+                          >
+                            <div className="relative overflow-hidden aspect-[2/3] bg-gray-100 mb-3">
+                              {product.image && (
+                                <img 
+                                  src={product.image} 
+                                  alt={product.name}
+                                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                />
+                              )}
+                            </div>
+                            <h3 className="text-sm font-medium text-gray-800 font-menu">{product.name}</h3>
+                            <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
+                              ${product.price?.toLocaleString('es-CO')} COP
+                            </p>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
-            )}
 
-            {searchQuery.trim().length < 2 && randomProducts.length > 0 && (
-              <div>
-                <h3 
-                  key={`search-title-${searchKey}`}
-                  className="text-sm font-medium text-gray-800 font-menu mb-6 transform translate-y-4 opacity-0 animate-fadeInUp"
-                  style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}
-                >
-                  Búsqueda rápida
-                </h3>
-                
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {randomProducts.map((product, index) => (
-                    <Link
-                      key={`product-${searchKey}-${product.id}`}
-                      to={`/producto/${product.slug || product.id}`}
-                      onClick={() => setSearchOpen(false)}
-                      className="group cursor-pointer transform translate-y-4 opacity-0 animate-fadeInUp"
-                      style={{ animationDelay: `${0.5 + index * 0.1}s`, animationFillMode: 'forwards' }}
+                {searchQuery.trim().length < 2 && randomProducts.length > 0 && (
+                  <div>
+                    <h3 
+                      key={`search-title-${searchKey}`}
+                      className="text-sm font-medium text-gray-800 font-menu mb-6 transform translate-y-4 opacity-0 animate-fadeInUp"
+                      style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}
                     >
-                      <div className="relative overflow-hidden aspect-[2/3] bg-gray-100 mb-3">
-                        {product.image && (
-                          <img 
-                            src={product.image} 
-                            alt={product.name}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                          />
-                        )}
-                      </div>
-                      <h3 className="text-sm font-medium text-gray-800 font-menu">{product.name}</h3>
-                      <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
-                        ${product.price?.toLocaleString('es-CO')} COP
-                      </p>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
+                      Búsqueda rápida
+                    </h3>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {randomProducts.map((product, index) => (
+                        <Link
+                          key={`product-${searchKey}-${product.id}`}
+                          to={`/producto/${product.slug || product.id}`}
+                          onClick={() => setSearchOpen(false)}
+                          className="group cursor-pointer transform translate-y-4 opacity-0 animate-fadeInUp"
+                          style={{ animationDelay: `${0.5 + index * 0.1}s`, animationFillMode: 'forwards' }}
+                        >
+                          <div className="relative overflow-hidden aspect-[2/3] bg-gray-100 mb-3">
+                            {product.image && (
+                              <img 
+                                src={product.image} 
+                                alt={product.name}
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                              />
+                            )}
+                          </div>
+                          <h3 className="text-sm font-medium text-gray-800 font-menu">{product.name}</h3>
+                          <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
+                            ${product.price?.toLocaleString('es-CO')} COP
+                          </p>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-            {searchQuery.trim().length < 2 && randomProducts.length === 0 && (
-              <p className="text-gray-500 text-center">No hay productos disponibles</p>
-            )}
+                {searchQuery.trim().length < 2 && randomProducts.length === 0 && (
+                  <p className="text-gray-500 text-center">No hay productos disponibles</p>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
     </header>
   )
 }
