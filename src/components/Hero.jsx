@@ -6,16 +6,18 @@ import { supabase } from '../lib/supabase'
 export default function Hero() {
   const containerRef = useRef(null)
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
-  const [isMobile, setIsMobile] = useState(false)
   const [callouts, setCallouts] = useState(null)
   const [loaded, setLoaded] = useState(false)
 
+  const isMobileRef = useRef(typeof window !== 'undefined' ? window.innerWidth < 768 : false)
+
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
-    checkMobile()
+    const checkMobile = () => { isMobileRef.current = window.innerWidth < 768 }
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
+
+  const [mobileState, setMobileState] = useState(isMobileRef.current)
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -32,19 +34,25 @@ export default function Hero() {
   }, [])
 
   useEffect(() => {
+    const onResize = () => setMobileState(window.innerWidth < 768)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  useEffect(() => {
     const fetchCallouts = async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('hero_callouts')
         .select('*')
-        .eq('is_desktop', !isMobile)
+        .eq('is_desktop', !mobileState)
         .order('position', { ascending: true })
       setCallouts(data || [])
       setLoaded(true)
     }
     fetchCallouts()
-  }, [isMobile])
+  }, [mobileState])
 
-  const fallbackCallouts = isMobile ? [
+  const fallbackCallouts = mobileState ? [
     { pointX: 52.9, pointY: 67.5, boxOffsetX: 107, boxOffsetY: -145 },
     { pointX: 46.9, pointY: 56.9, boxOffsetX: -93, boxOffsetY: -130 },
     { pointX: 47.8, pointY: 91.2, boxOffsetX: -106, boxOffsetY: -143 },
