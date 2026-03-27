@@ -87,8 +87,10 @@ export default function Hero() {
       <svg
         className="absolute inset-0 w-full h-full pointer-events-none"
         style={{ zIndex: 3 }}
+        width={dimensions.width || undefined}
+        height={dimensions.height || undefined}
       >
-        {activeCallouts.map((callout) => {
+        {dimensions.width > 0 && activeCallouts.map((callout) => {
           const pointX = callout.point_x ?? callout.pointX
           const pointY = callout.point_y ?? callout.pointY
           const boxOffsetX = callout.box_offset_x ?? callout.boxOffsetX
