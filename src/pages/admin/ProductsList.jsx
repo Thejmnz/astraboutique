@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import AdminLayout from './AdminLayout'
-import { Edit, Trash2, Plus, GripVertical, Save } from 'lucide-react'
+import { Edit, Trash2, Plus, GripVertical, Save, Archive, ArchiveRestore } from 'lucide-react'
 
 export default function ProductsList() {
   const navigate = useNavigate()
@@ -12,22 +12,47 @@ export default function ProductsList() {
   const [saved, setSaved] = useState(false)
   const [dragIdx, setDragIdx] = useState(null)
   const [overIdx, setOverIdx] = useState(null)
+  const [view, setView] = useState('active')
   const dragItem = useRef(null)
 
   useEffect(() => {
     fetchProducts()
-  }, [])
+  }, [view])
 
   const fetchProducts = async () => {
-    const { data } = await supabase
+    setLoading(true)
+    let query = supabase
       .from('products')
-      .select('*, product_sizes(*), product_colors(colors(*)), categories(*)')      .order('sort_order', { ascending: true })
+      .select('*, product_sizes(*), product_colors(colors(*)), categories(*)')
+      .order('sort_order', { ascending: true })
       .order('created_at', { ascending: false })
+
+    if (view === 'active') {
+      query = query.neq('archived', true)
+    } else {
+      query = query.eq('archived', true)
+    }
+
+    const { data } = await query
     setProducts((data || []).map(p => ({
       ...p,
       colors_list: (p.product_colors || []).map(pc => pc.colors).filter(Boolean)
     })))
     setLoading(false)
+  }
+
+  const handleArchive = async (id) => {
+    const archive = view === 'active'
+    const { error } = await supabase
+      .from('products')
+      .update({ archived: archive })
+      .eq('id', id)
+
+    if (error) {
+      alert('Error: ' + error.message)
+      return
+    }
+    fetchProducts()
   }
 
   const handleDelete = async (id) => {
@@ -94,7 +119,27 @@ export default function ProductsList() {
     <AdminLayout>
       <div className="p-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-display">Productos</h1>
+          <div className="flex items-center gap-6">
+            <h1 className="text-2xl font-display">Productos</h1>
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setView('active')}
+                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
+                  view === 'active' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Activos
+              </button>
+              <button
+                onClick={() => setView('archived')}
+                className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
+                  view === 'archived' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Archivados
+              </button>
+            </div>
+          </div>
           <div className="flex items-center gap-3">
             {hasChanges && (
               <button
@@ -213,11 +258,24 @@ export default function ProductsList() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
+                        {view === 'active' && (
+                          <button
+                            onClick={() => navigate(`/admin/productos/editar/${product.id}`)}
+                            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                          >
+                            <Edit size={18} />
+                          </button>
+                        )}
                         <button
-                          onClick={() => navigate(`/admin/productos/editar/${product.id}`)}
-                          className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                          onClick={() => handleArchive(product.id)}
+                          className={`p-2 transition-colors ${
+                            view === 'active'
+                              ? 'text-gray-400 hover:text-amber-600'
+                              : 'text-gray-400 hover:text-green-600'
+                          }`}
+                          title={view === 'active' ? 'Archivar' : 'Desarchivar'}
                         >
-                          <Edit size={18} />
+                          {view === 'active' ? <Archive size={18} /> : <ArchiveRestore size={18} />}
                         </button>
                         <button
                           onClick={() => handleDelete(product.id)}

@@ -31,6 +31,7 @@ export default function ProductPage() {
       .from('products')
       .select('*, product_sizes(*), product_colors(colors(*))')
       .eq('slug', slug)
+      .neq('archived', true)
       .single()
 
     if (!error && data) {
@@ -88,6 +89,7 @@ export default function ProductPage() {
   }
 
   const allSizes = product.product_sizes || []
+  const isFullyOutOfStock = allSizes.length > 0 && allSizes.every(ps => ps.stock === 0)
 
   return (
     <div className="min-h-screen bg-background-light pt-24 md:pt-28 pb-16">
@@ -400,9 +402,16 @@ export default function ProductPage() {
           </div>
           
           <div className="lg:py-8 min-w-0 max-w-full overflow-hidden">
-            <h1 className="text-3xl md:text-4xl font-heading font-light tracking-tight mb-2">
-              {product.name}
-            </h1>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl md:text-4xl font-heading font-light tracking-tight">
+                {product.name}
+              </h1>
+              {isFullyOutOfStock && (
+                <span className="bg-red-600 text-white text-[10px] px-3 py-1 rounded-full font-bold tracking-wider">
+                  AGOTADO
+                </span>
+              )}
+            </div>
             <p className="text-base text-primary font-menu mb-6">
               ${product.price?.toLocaleString('es-CO')}
             </p>
@@ -499,10 +508,13 @@ export default function ProductPage() {
             <div className="flex gap-4 mb-6">
               <button
                 onClick={handleAddToCart}
-                className="flex-1 text-white py-4 text-sm font-menu hover:opacity-90 transition-all duration-300"
-                style={{ backgroundColor: '#251E1A' }}
+                disabled={isFullyOutOfStock}
+                className={`flex-1 text-white py-4 text-sm font-menu transition-all duration-300 ${
+                  isFullyOutOfStock ? 'bg-gray-400 cursor-not-allowed' : 'hover:opacity-90'
+                }`}
+                style={isFullyOutOfStock ? {} : { backgroundColor: '#251E1A' }}
               >
-                Agregar al Carrito
+                {isFullyOutOfStock ? 'Agotado' : 'Agregar al Carrito'}
               </button>
               <button
                 onClick={() => toggleWishlist(product)}

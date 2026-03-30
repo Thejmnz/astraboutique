@@ -52,6 +52,7 @@ export default function AllProducts() {
     const { data } = await supabase
       .from('products')
       .select('*, product_sizes(*), product_colors(colors(*)), categories(*)')
+      .neq('archived', true)
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: false })
     setProducts((data || []).map(p => ({
@@ -294,11 +295,15 @@ export default function AllProducts() {
                       src={product.images[1]}
                     />
                   )}
-                  {product.is_new && (Date.now() - new Date(product.created_at).getTime() < 15 * 24 * 60 * 60 * 1000) && (
+                  {(product.product_sizes || []).length > 0 && (product.product_sizes || []).every(s => s.stock === 0) ? (
+                    <span className="absolute top-4 left-4 bg-red-600 text-white text-[10px] px-3 py-1 rounded-full font-bold tracking-wider">
+                      AGOTADO
+                    </span>
+                  ) : product.is_new && (Date.now() - new Date(product.created_at).getTime() < 15 * 24 * 60 * 60 * 1000) ? (
                     <span className="absolute top-4 left-4 bg-primary text-white text-[10px] px-3 py-1 rounded-full font-bold tracking-wider">
                       NUEVO
                     </span>
-                  )}
+                  ) : null}
                   {product.badge && (
                     <span className="absolute bottom-4 left-4 bg-white text-primary text-[9px] font-bold tracking-wider border border-primary px-2 py-0.5 rounded-full">
                       {product.badge.toUpperCase()}

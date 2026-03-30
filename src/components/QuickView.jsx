@@ -24,6 +24,7 @@ export default function QuickView({ product, onClose }) {
   }, [onClose])
 
   const allSizes = product.product_sizes || []
+  const isFullyOutOfStock = allSizes.length > 0 && allSizes.every(s => s.stock === 0)
 
   const handleAddToCart = () => {
     if (!selectedSize) {

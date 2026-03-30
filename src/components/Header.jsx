@@ -46,6 +46,7 @@ export default function Header() {
     const { data } = await supabase
       .from('products')
       .select('id, name, slug, price, images')
+      .neq('archived', true)
       .limit(4)
     if (data) {
       setRandomProducts(data.map(p => ({
@@ -60,10 +61,10 @@ export default function Header() {
         setSearching(true)
         const q = searchQuery.trim()
         const [res1, res2, res3, res4] = await Promise.all([
-          supabase.from('products').select('id, name, slug, price, images, colors(name)').ilike('name', `%${q}%`),
-          supabase.from('products').select('id, name, slug, price, images, colors(name)').ilike('description', `%${q}%`),
-          supabase.from('products').select('id, name, slug, price, images, colors(name)').ilike('code', `%${q}%`),
-          supabase.from('products').select('id, name, slug, price, images, colors(name)').ilike('color_name', `%${q}%`),
+          supabase.from('products').select('id, name, slug, price, images, colors(name)').neq('archived', true).ilike('name', `%${q}%`),
+          supabase.from('products').select('id, name, slug, price, images, colors(name)').neq('archived', true).ilike('description', `%${q}%`),
+          supabase.from('products').select('id, name, slug, price, images, colors(name)').neq('archived', true).ilike('code', `%${q}%`),
+          supabase.from('products').select('id, name, slug, price, images, colors(name)').neq('archived', true).ilike('color_name', `%${q}%`),
         ])
         const all = [...(res1.data || []), ...(res2.data || []), ...(res3.data || []), ...(res4.data || [])]
         const seen = new Set()
