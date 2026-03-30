@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import AdminLayout from './AdminLayout'
-import { Plus, Trash2, X, TrendingUp, DollarSign, ShoppingCart, Search, PackageOpen, Minus, Pencil } from 'lucide-react'
+import { Plus, Trash2, X, TrendingUp, DollarSign, ShoppingCart, Search, PackageOpen, Minus, Pencil, ImagePlus, XCircle } from 'lucide-react'
 import ConfirmModal from '../../components/ConfirmModal'
 
 const fmt = (v) => '$' + Number(v).toLocaleString('es-CO')
@@ -27,14 +27,17 @@ export default function FinanzasPage() {
     customer_name: '',
     sale_price: '',
     cost_price: '',
-    notes: ''
+    notes: '',
+    receipt_url: ''
   })
 
   const [wholesaleData, setWholesaleData] = useState({
     order_date: new Date().toISOString().split('T')[0],
     supplier: '',
     payment_status: 'pending',
-    notes: ''
+    notes: '',
+    receipt_url: '',
+    invoice_url: ''
   })
   const [wholesaleItems, setWholesaleItems] = useState([{ product_name: '', price: '' }])
   const [showSupplierDropdown, setShowSupplierDropdown] = useState(false)
@@ -45,6 +48,10 @@ export default function FinanzasPage() {
   const [deleteModal, setDeleteModal] = useState({ open: false, type: '', id: null, onConfirm: null })
 
   const [deleteWholesaleModal, setDeleteWholesaleModal] = useState({ open: false, type: '', id: null, onConfirm: null })
+  const [receiptPreview, setReceiptPreview] = useState(null)
+  const receiptInputRef = useRef(null)
+  const wholesaleReceiptRef = useRef(null)
+  const wholesaleInvoiceRef = useRef(null)
 
   useEffect(() => {
     fetchSales()
@@ -93,6 +100,54 @@ export default function FinanzasPage() {
   const selectedProduct = products.find(p => p.id === formData.product_id)
   const availableSizes = selectedProduct?.product_sizes || []
 
+  const handleReceiptUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const { convertToWebP } = await import('../../lib/convertToWebP')
+    const webpFile = await convertToWebP(file)
+    const filePath = `receipts/${Date.now()}-${Math.random().toString(36).substring(7)}.webp`
+
+    const { error: uploadError } = await supabase.storage
+      .from('products')
+      .upload(filePath, webpFile)
+
+    if (uploadError) {
+      alert('Error al subir comprobante: ' + uploadError.message)
+      return
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('products')
+      .getPublicUrl(filePath)
+
+    setFormData({ ...formData, receipt_url: publicUrl })
+  }
+
+  const handleWholesaleFileUpload = async (e, field) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const { convertToWebP } = await import('../../lib/convertToWebP')
+    const webpFile = await convertToWebP(file)
+    const filePath = `receipts/${Date.now()}-${Math.random().toString(36).substring(7)}.webp`
+
+    const { error: uploadError } = await supabase.storage
+      .from('products')
+      .upload(filePath, webpFile)
+
+    if (uploadError) {
+      alert('Error al subir imagen: ' + uploadError.message)
+      return
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('products')
+      .getPublicUrl(filePath)
+
+    setWholesaleData({ ...wholesaleData, [field]: publicUrl })
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!formData.product_id || !formData.sale_price) return
@@ -108,7 +163,8 @@ export default function FinanzasPage() {
       sale_price: parseInt(formData.sale_price),
       cost_price: parseInt(formData.cost_price || 0),
       profit,
-      notes: formData.notes || null
+      notes: formData.notes || null,
+      receipt_url: formData.receipt_url || null
     }
 
     let error
@@ -124,7 +180,7 @@ export default function FinanzasPage() {
       return
     }
 
-    setFormData({ product_id: '', size: '', customer_name: '', sale_price: '', cost_price: '', notes: '' })
+    setFormData({ product_id: '', size: '', customer_name: '', sale_price: '', cost_price: '', notes: '', receipt_url: '' })
     setEditingSaleId(null)
     setShowForm(false)
     setSaving(false)
@@ -146,7 +202,9 @@ export default function FinanzasPage() {
       order_date: wholesaleData.order_date || new Date().toISOString().split('T')[0],
       supplier: wholesaleData.supplier || null,
       payment_status: wholesaleData.payment_status || 'pending',
-      notes: wholesaleData.notes || null
+      notes: wholesaleData.notes || null,
+      receipt_url: wholesaleData.receipt_url || null,
+      invoice_url: wholesaleData.invoice_url || null
     }
 
     let error
@@ -162,7 +220,7 @@ export default function FinanzasPage() {
       return
     }
 
-    setWholesaleData({ order_date: new Date().toISOString().split('T')[0], supplier: '', payment_status: 'pending', notes: '' })
+    setWholesaleData({ order_date: new Date().toISOString().split('T')[0], supplier: '', payment_status: 'pending', notes: '', receipt_url: '', invoice_url: '' })
     setWholesaleItems([{ product_name: '', price: '' }])
     setEditingWholesaleId(null)
     setShowWholesaleForm(false)
@@ -197,7 +255,8 @@ export default function FinanzasPage() {
       customer_name: sale.customer_name || '',
       sale_price: sale.sale_price?.toString() || '',
       cost_price: sale.cost_price?.toString() || '',
-      notes: sale.notes || ''
+      notes: sale.notes || '',
+      receipt_url: sale.receipt_url || ''
     })
     setProductSearch('')
     setShowProductDropdown(false)
@@ -211,7 +270,9 @@ export default function FinanzasPage() {
       order_date: order.order_date || new Date().toISOString().split('T')[0],
       supplier: order.supplier || '',
       payment_status: order.payment_status || 'pending',
-      notes: order.notes || ''
+      notes: order.notes || '',
+      receipt_url: order.receipt_url || '',
+      invoice_url: order.invoice_url || ''
     })
     if (parsed) {
       setWholesaleItems(parsed.map(i => ({ product_name: i.product_name, price: i.price.toString() })))
@@ -296,7 +357,7 @@ export default function FinanzasPage() {
               <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-lg font-medium">{editingSaleId ? 'Editar Venta' : 'Registrar Venta'}</h2>
-                  <button onClick={() => { setShowForm(false); setEditingSaleId(null); setFormData({ product_id: '', size: '', customer_name: '', sale_price: '', cost_price: '', notes: '' }) }} className="text-gray-400 hover:text-gray-600">
+                  <button onClick={() => { setShowForm(false); setEditingSaleId(null); setFormData({ product_id: '', size: '', customer_name: '', sale_price: '', cost_price: '', notes: '', receipt_url: '' }) }} className="text-gray-400 hover:text-gray-600">
                     <X size={20} />
                   </button>
                 </div>
@@ -446,6 +507,38 @@ export default function FinanzasPage() {
                     />
                   </div>
 
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Comprobante de pago</label>
+                    <input
+                      ref={receiptInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleReceiptUpload}
+                      className="hidden"
+                    />
+                    {formData.receipt_url ? (
+                      <div className="relative inline-block">
+                        <img src={formData.receipt_url} alt="Comprobante" className="h-24 rounded-lg border border-gray-200 object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, receipt_url: '' })}
+                          className="absolute -top-2 -right-2 bg-white rounded-full shadow-md p-1 text-gray-400 hover:text-red-500"
+                        >
+                          <XCircle size={16} />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => receiptInputRef.current?.click()}
+                        className="flex items-center gap-2 px-4 py-2.5 border border-dashed border-gray-300 rounded-md text-sm text-gray-500 hover:text-gray-700 hover:border-gray-400 transition-colors"
+                      >
+                        <ImagePlus size={18} />
+                        Subir comprobante
+                      </button>
+                    )}
+                  </div>
+
                   <div className="flex items-center gap-4 pt-2">
                     <button
                       type="submit"
@@ -454,7 +547,7 @@ export default function FinanzasPage() {
                     >
                       {saving ? 'Guardando...' : editingSaleId ? 'Guardar cambios' : 'Registrar venta'}
                     </button>
-                    <button type="button" onClick={() => { setShowForm(false); setEditingSaleId(null); setFormData({ product_id: '', size: '', customer_name: '', sale_price: '', cost_price: '', notes: '' }) }} className="px-6 py-2.5 rounded-md font-medium text-gray-600 hover:bg-gray-100 transition-colors">
+                    <button type="button" onClick={() => { setShowForm(false); setEditingSaleId(null); setFormData({ product_id: '', size: '', customer_name: '', sale_price: '', cost_price: '', notes: '', receipt_url: '' }) }} className="px-6 py-2.5 rounded-md font-medium text-gray-600 hover:bg-gray-100 transition-colors">
                       Cancelar
                     </button>
                   </div>
@@ -546,6 +639,9 @@ export default function FinanzasPage() {
                           <td className={`px-6 py-4 text-sm font-bold text-right ${sale.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>{fmt(sale.profit)}</td>
                           <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px] truncate">{sale.notes || '-'}</td>
                           <td className="px-6 py-4 text-right whitespace-nowrap">
+                            {sale.receipt_url && (
+                              <button onClick={() => setReceiptPreview(sale.receipt_url)} className="p-2 text-gray-400 hover:text-blue-600 transition-colors" title="Ver comprobante"><ImagePlus size={16} /></button>
+                            )}
                             <button onClick={() => handleEditSale(sale)} className="p-2 text-gray-400 hover:text-blue-600 transition-colors"><Pencil size={16} /></button>
                             <button onClick={() => handleDelete(sale.id)} className="p-2 text-gray-400 hover:text-red-600 transition-colors"><Trash2 size={16} /></button>
                           </td>
@@ -593,7 +689,13 @@ export default function FinanzasPage() {
                         <span className="text-gray-400 font-medium">Utilidad</span>
                         <span className={`font-bold text-right ${sale.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>{fmt(sale.profit)}</span>
                       </div>
-                      {sale.notes && (
+                      {sale.receipt_url && (
+                        <button onClick={() => setReceiptPreview(sale.receipt_url)} className="mt-3 pt-2 border-t border-gray-50 w-full text-left text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                          <ImagePlus size={14} />
+                          Ver comprobante
+                        </button>
+                      )}
+                      {!sale.receipt_url && sale.notes && (
                         <p className="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-50 truncate">{sale.notes}</p>
                       )}
                     </div>
@@ -613,7 +715,7 @@ export default function FinanzasPage() {
               <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-lg font-medium">{editingWholesaleId ? 'Editar Pedido Por Mayor' : 'Nuevo Pedido Por Mayor'}</h2>
-                  <button onClick={() => { setShowWholesaleForm(false); setEditingWholesaleId(null); setWholesaleData({ order_date: new Date().toISOString().split('T')[0], supplier: '', payment_status: 'pending', notes: '' }); setWholesaleItems([{ product_name: '', price: '' }]) }} className="text-gray-400 hover:text-gray-600">
+                  <button onClick={() => { setShowWholesaleForm(false); setEditingWholesaleId(null); setWholesaleData({ order_date: new Date().toISOString().split('T')[0], supplier: '', payment_status: 'pending', notes: '', receipt_url: '', invoice_url: '' }); setWholesaleItems([{ product_name: '', price: '' }]) }} className="text-gray-400 hover:text-gray-600">
                     <X size={20} />
                   </button>
                 </div>
@@ -776,6 +878,39 @@ export default function FinanzasPage() {
                     />
                   </div>
 
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Comprobante de pago</label>
+                      <input ref={wholesaleReceiptRef} type="file" accept="image/*" onChange={(e) => handleWholesaleFileUpload(e, 'receipt_url')} className="hidden" />
+                      {wholesaleData.receipt_url ? (
+                        <div className="relative inline-block">
+                          <img src={wholesaleData.receipt_url} alt="Comprobante" className="h-24 rounded-lg border border-gray-200 object-cover" />
+                          <button type="button" onClick={() => setWholesaleData({ ...wholesaleData, receipt_url: '' })} className="absolute -top-2 -right-2 bg-white rounded-full shadow-md p-1 text-gray-400 hover:text-red-500"><XCircle size={16} /></button>
+                        </div>
+                      ) : (
+                        <button type="button" onClick={() => wholesaleReceiptRef.current?.click()} className="flex items-center gap-2 px-4 py-2.5 border border-dashed border-gray-300 rounded-md text-sm text-gray-500 hover:text-gray-700 hover:border-gray-400 transition-colors w-full">
+                          <ImagePlus size={18} />
+                          Subir comprobante
+                        </button>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Factura proveedor</label>
+                      <input ref={wholesaleInvoiceRef} type="file" accept="image/*" onChange={(e) => handleWholesaleFileUpload(e, 'invoice_url')} className="hidden" />
+                      {wholesaleData.invoice_url ? (
+                        <div className="relative inline-block">
+                          <img src={wholesaleData.invoice_url} alt="Factura" className="h-24 rounded-lg border border-gray-200 object-cover" />
+                          <button type="button" onClick={() => setWholesaleData({ ...wholesaleData, invoice_url: '' })} className="absolute -top-2 -right-2 bg-white rounded-full shadow-md p-1 text-gray-400 hover:text-red-500"><XCircle size={16} /></button>
+                        </div>
+                      ) : (
+                        <button type="button" onClick={() => wholesaleInvoiceRef.current?.click()} className="flex items-center gap-2 px-4 py-2.5 border border-dashed border-gray-300 rounded-md text-sm text-gray-500 hover:text-gray-700 hover:border-gray-400 transition-colors w-full">
+                          <ImagePlus size={18} />
+                          Subir factura
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="flex items-center gap-4 pt-2">
                     <button
                       type="submit"
@@ -784,7 +919,7 @@ export default function FinanzasPage() {
                     >
                       {saving ? 'Guardando...' : editingWholesaleId ? 'Guardar cambios' : 'Registrar pedido'}
                     </button>
-                    <button type="button" onClick={() => { setShowWholesaleForm(false); setEditingWholesaleId(null); setWholesaleData({ order_date: new Date().toISOString().split('T')[0], supplier: '', payment_status: 'pending', notes: '' }); setWholesaleItems([{ product_name: '', price: '' }]) }} className="px-6 py-2.5 rounded-md font-medium text-gray-600 hover:bg-gray-100 transition-colors">
+                    <button type="button" onClick={() => { setShowWholesaleForm(false); setEditingWholesaleId(null); setWholesaleData({ order_date: new Date().toISOString().split('T')[0], supplier: '', payment_status: 'pending', notes: '', receipt_url: '', invoice_url: '' }); setWholesaleItems([{ product_name: '', price: '' }]) }} className="px-6 py-2.5 rounded-md font-medium text-gray-600 hover:bg-gray-100 transition-colors">
                       Cancelar
                     </button>
                   </div>
@@ -879,6 +1014,12 @@ export default function FinanzasPage() {
                         <td className="px-6 py-4 text-sm font-bold text-right">{fmt(order.cost)}</td>
                         <td className="px-6 py-4 text-sm text-gray-500 max-w-[200px] truncate">{order.notes || '-'}</td>
                         <td className="px-6 py-4 text-right whitespace-nowrap">
+                          {order.receipt_url && (
+                            <button onClick={() => setReceiptPreview(order.receipt_url)} className="p-2 text-gray-400 hover:text-blue-600 transition-colors" title="Comprobante de pago"><ImagePlus size={16} /></button>
+                          )}
+                          {order.invoice_url && (
+                            <button onClick={() => setReceiptPreview(order.invoice_url)} className="p-2 text-gray-400 hover:text-green-600 transition-colors" title="Factura proveedor"><ImagePlus size={16} /></button>
+                          )}
                           <button onClick={() => handleEditWholesale(order)} className="p-2 text-gray-400 hover:text-blue-600 transition-colors"><Pencil size={16} /></button>
                           <button onClick={() => handleDeleteWholesale(order.id)} className="p-2 text-gray-400 hover:text-red-600 transition-colors"><Trash2 size={16} /></button>
                         </td>
@@ -940,6 +1081,22 @@ export default function FinanzasPage() {
                     {order.notes && (
                       <p className="text-xs text-gray-400 mt-2 truncate">{order.notes}</p>
                     )}
+                    {(order.receipt_url || order.invoice_url) && (
+                      <div className="flex gap-3 mt-2 pt-2 border-t border-gray-50">
+                        {order.receipt_url && (
+                          <button onClick={() => setReceiptPreview(order.receipt_url)} className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                            <ImagePlus size={14} />
+                            Comprobante
+                          </button>
+                        )}
+                        {order.invoice_url && (
+                          <button onClick={() => setReceiptPreview(order.invoice_url)} className="text-xs text-green-600 hover:text-green-800 flex items-center gap-1">
+                            <ImagePlus size={14} />
+                            Factura
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )
               })}
@@ -958,6 +1115,18 @@ export default function FinanzasPage() {
         onConfirm={confirmDelete}
         onCancel={() => setDeleteModal({ open: false, type: null, id: null })}
       />
+
+      {receiptPreview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setReceiptPreview(null)}>
+          <div className="absolute inset-0 bg-black/70" />
+          <div className="relative max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setReceiptPreview(null)} className="absolute -top-3 -right-3 bg-white rounded-full shadow-lg p-2 text-gray-500 hover:text-gray-800 z-10">
+              <X size={20} />
+            </button>
+            <img src={receiptPreview} alt="Comprobante" className="w-full rounded-lg shadow-2xl" />
+          </div>
+        </div>
+      )}
     </AdminLayout>
   )
 }
