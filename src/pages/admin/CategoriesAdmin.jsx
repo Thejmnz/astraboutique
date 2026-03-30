@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import AdminLayout from './AdminLayout'
 import { Plus, Edit3, Trash2, Check, X, Save } from 'lucide-react'
+import ConfirmModal from '../../components/ConfirmModal'
 
 const generateSlug = (name) => {
   return name
@@ -20,6 +21,7 @@ export default function CategoriesAdmin() {
   const [editName, setEditName] = useState('')
   const [dragIdx, setDragIdx] = useState(null)
   const [overIdx, setOverIdx] = useState(null)
+  const [deleteModal, setDeleteModal] = useState({ open: false, id: null })
 
   useEffect(() => {
     fetchCategories()
@@ -72,19 +74,22 @@ export default function CategoriesAdmin() {
     fetchCategories()
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('¿Estas seguro de eliminar esta categoria? Los productos quedaran sin categoria.')) return
+  const handleDelete = (id) => {
+    setDeleteModal({ open: true, id })
+  }
 
+  const confirmDelete = async () => {
     const { error } = await supabase
       .from('categories')
       .delete()
-      .eq('id', id)
+      .eq('id', deleteModal.id)
 
     if (error) {
       alert('Error al eliminar: ' + error.message)
       return
     }
 
+    setDeleteModal({ open: false, id: null })
     fetchCategories()
   }
 
@@ -253,6 +258,14 @@ export default function CategoriesAdmin() {
           )}
         </div>
       </div>
+
+      <ConfirmModal
+        open={deleteModal.open}
+        title="¿Eliminar categoría?"
+        message="Los productos quedarán sin categoría al eliminarla."
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteModal({ open: false, id: null })}
+      />
     </AdminLayout>
   )
 }

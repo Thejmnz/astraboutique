@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import AdminLayout from './AdminLayout'
 import { Edit, Trash2, Plus, GripVertical, Save, Archive, ArchiveRestore } from 'lucide-react'
+import ConfirmModal from '../../components/ConfirmModal'
 
 export default function ProductsList() {
   const navigate = useNavigate()
@@ -13,6 +14,7 @@ export default function ProductsList() {
   const [dragIdx, setDragIdx] = useState(null)
   const [overIdx, setOverIdx] = useState(null)
   const [view, setView] = useState('active')
+  const [deleteModal, setDeleteModal] = useState({ open: false, id: null })
   const dragItem = useRef(null)
 
   useEffect(() => {
@@ -55,19 +57,18 @@ export default function ProductsList() {
     fetchProducts()
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('¿Estás seguro de eliminar este producto?')) return
-
+  const confirmDelete = async () => {
     const { error } = await supabase
       .from('products')
       .delete()
-      .eq('id', id)
+      .eq('id', deleteModal.id)
 
     if (error) {
       alert('Error al eliminar: ' + error.message)
       return
     }
 
+    setDeleteModal({ open: false, id: null })
     fetchProducts()
   }
 
@@ -117,9 +118,9 @@ export default function ProductsList() {
 
   return (
     <AdminLayout>
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-6">
+      <div className="p-4 md:p-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8">
+          <div className="flex items-center gap-4 sm:gap-6">
             <h1 className="text-2xl font-display">Productos</h1>
             <div className="flex bg-gray-100 rounded-lg p-1">
               <button
@@ -201,8 +202,8 @@ export default function ProductsList() {
                       <div className="flex items-center gap-4">
                         <div className="w-16 h-20 bg-gray-100 rounded overflow-hidden flex-shrink-0 relative">
                           {product.images?.[0] && (
-                            <img 
-                              src={product.images[0]} 
+                            <img
+                              src={product.images[0]}
                               alt={product.name}
                               className="w-full h-full object-cover"
                             />
@@ -278,7 +279,7 @@ export default function ProductsList() {
                           {view === 'active' ? <Archive size={18} /> : <ArchiveRestore size={18} />}
                         </button>
                         <button
-                          onClick={() => handleDelete(product.id)}
+                          onClick={() => setDeleteModal({ open: true, id: product.id })}
                           className="p-2 text-gray-400 hover:text-red-600 transition-colors"
                         >
                           <Trash2 size={18} />
@@ -298,6 +299,14 @@ export default function ProductsList() {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        open={deleteModal.open}
+        title="¿Eliminar producto?"
+        message="Esta acción no se puede deshacer. El producto será eliminado permanentemente."
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteModal({ open: false, id: null })}
+      />
     </AdminLayout>
   )
 }
