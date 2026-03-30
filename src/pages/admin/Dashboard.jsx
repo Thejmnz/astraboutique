@@ -103,13 +103,7 @@ export default function Dashboard() {
 
   const statCards = [
     { label: 'Productos', value: stats.products, icon: Package, color: 'bg-blue-50 text-blue-600' },
-    { label: 'Ingresos totales', value: formatCurrency(stats.totalRevenue), icon: DollarSign, color: 'bg-green-50 text-green-600' },
-    { label: 'Pedidos totales', value: stats.totalOrders, icon: ShoppingBag, color: 'bg-indigo-50 text-indigo-600' },
-    { label: 'Clientes', value: 0, icon: Users, color: 'bg-pink-50 text-pink-600' },
-    { label: 'Pedidos pendientes', value: stats.pendingOrders, icon: Clock, color: 'bg-yellow-50 text-yellow-600' },
-    { label: 'Enviados', value: stats.shippedOrders, icon: TrendingUp, color: 'bg-purple-50 text-purple-600' },
     { label: 'Stock bajo', value: stats.lowStock, icon: AlertTriangle, color: 'bg-red-50 text-red-600' },
-    { label: 'Vistas totales', value: stats.totalViews, icon: Eye, color: 'bg-cyan-50 text-cyan-600' },
   ]
 
   return (
