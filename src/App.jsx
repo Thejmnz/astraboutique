@@ -26,6 +26,7 @@ import CategoriesAdmin from './pages/admin/CategoriesAdmin'
 import OrdersPage from './pages/admin/OrdersPage'
 import BioLinksAdmin from './pages/admin/BioLinksAdmin'
 import CustomersPage from './pages/admin/CustomersPage'
+import FinanzasPage from './pages/admin/FinanzasPage'
 import HeroEditor from './pages/admin/HeroEditor'
 import ProtectedRoute from './components/ProtectedRoute'
 import ScrollToTop from './components/ScrollToTop'
@@ -104,6 +105,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <CustomersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/finanzas"
+            element={
+              <ProtectedRoute>
+                <FinanzasPage />
               </ProtectedRoute>
             }
           />

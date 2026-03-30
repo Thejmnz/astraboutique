@@ -1,6 +1,6 @@
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Package, Plus, LogOut, LayoutDashboard, ClipboardList, Link2, Users, Image, Tag } from 'lucide-react'
+import { Package, Plus, LogOut, LayoutDashboard, ClipboardList, Link2, Users, Image, Tag, DollarSign } from 'lucide-react'
 
 export default function AdminLayout({ children }) {
   const { signOut } = useAuth()
@@ -17,6 +17,7 @@ export default function AdminLayout({ children }) {
     { id: 'products', label: 'Productos', icon: Package, path: '/admin/productos' },
     { id: 'categories', label: 'Categorias', icon: Tag, path: '/admin/categorias' },
     { id: 'orders', label: 'Pedidos', icon: ClipboardList, path: '/admin/pedidos' },
+    { id: 'finanzas', label: 'Finanzas', icon: DollarSign, path: '/admin/finanzas' },
     { id: 'customers', label: 'Usuarios', icon: Users, path: '/admin/usuarios' },
     { id: 'hero', label: 'Hero', icon: Image, path: '/admin/hero' },
     { id: 'links', label: 'Link en Bio', icon: Link2, path: '/admin/links' },

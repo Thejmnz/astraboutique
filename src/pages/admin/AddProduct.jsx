@@ -31,6 +31,7 @@ export default function AddProduct() {
     name: '',
     slug: '',
     price: '',
+    costPrice: '',
     colorIds: [],
     categoryId: '',
     description: '',
@@ -222,6 +223,7 @@ export default function AddProduct() {
         name: formData.name,
         slug: slug,
         price: parseInt(formData.price),
+        cost_price: parseInt(formData.costPrice) || null,
         category_id: formData.categoryId || null,
         description: formData.description,
         images: formData.images,
@@ -355,6 +357,28 @@ export default function AddProduct() {
                     className="w-full border border-gray-200 rounded-md py-2.5 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
                     required
                   />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Precio de costo (COP)</label>
+                  <input
+                    type="number"
+                    value={formData.costPrice}
+                    onChange={(e) => setFormData({ ...formData, costPrice: e.target.value })}
+                    className="w-full border border-gray-200 rounded-md py-2.5 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                    placeholder="Lo que te cuesta el producto"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Utilidad</label>
+                  <div className="w-full border border-gray-200 rounded-md py-2.5 px-3 bg-gray-50 text-sm font-medium">
+                    {formData.price && formData.costPrice
+                      ? `$${(parseInt(formData.price) - parseInt(formData.costPrice)).toLocaleString('es-CO')}`
+                      : '-'
+                    }
+                  </div>
                 </div>
               </div>
 

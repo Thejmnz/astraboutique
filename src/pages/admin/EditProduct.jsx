@@ -23,6 +23,7 @@ export default function EditProduct() {
   const [formData, setFormData] = useState({
     name: '',
     price: '',
+    costPrice: '',
     colorIds: [],
     categoryId: '',
     description: '',
@@ -67,6 +68,7 @@ export default function EditProduct() {
     setFormData({
       name: data.name || '',
       price: data.price || '',
+      costPrice: data.cost_price || '',
       colorIds: (data.product_colors || []).map(pc => pc.color_id),
       categoryId: data.category_id || '',
       description: data.description || '',
@@ -285,6 +287,7 @@ export default function EditProduct() {
         name: formData.name,
         slug,
         price: parseInt(formData.price),
+        cost_price: parseInt(formData.costPrice) || null,
         category_id: formData.categoryId || null,
         description: formData.description,
         images: formData.images,
