@@ -222,8 +222,8 @@ export default function FinanzasPage() {
                   >
                     <option value="">Sin talla</option>
                     {availableSizes.map(ps => (
-                      <option key={ps.id} value={ps.size} disabled={ps.stock === 0}>
-                        {ps.size} {ps.stock === 0 ? '(Agotado)' : `(Stock: ${ps.stock})`}
+                      <option key={ps.id} value={ps.size}>
+                        {ps.size} (Stock: {ps.stock})
                       </option>
                     ))}
                   </select>
