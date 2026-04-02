@@ -15,6 +15,7 @@ export default function AllProducts() {
   const [searchParams] = useSearchParams()
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'all')
   const [categorySlug, setCategorySlug] = useState(searchParams.get('categoria') || '')
+  const [saleOnly, setSaleOnly] = useState(searchParams.get('sale') === 'true')
   const [availableSizes, setAvailableSizes] = useState([])
   const [showFilters, setShowFilters] = useState(false)
   const [quickViewProduct, setQuickViewProduct] = useState(null)
@@ -23,8 +24,10 @@ export default function AllProducts() {
   useEffect(() => {
     const sort = searchParams.get('sort') || 'all'
     const cat = searchParams.get('categoria') || ''
+    const sale = searchParams.get('sale') === 'true'
     setSortBy(sort)
     setCategorySlug(cat)
+    setSaleOnly(sale)
   }, [searchParams])
 
   useEffect(() => {
@@ -103,6 +106,10 @@ export default function AllProducts() {
       )
     }
 
+    if (saleOnly) {
+      result = result.filter(p => p.on_sale && p.sale_price)
+    }
+
     switch (sortBy) {
       case 'newest':
         result = result.filter(p => p.is_new && (Date.now() - new Date(p.created_at).getTime() < 15 * 24 * 60 * 60 * 1000))
@@ -122,7 +129,7 @@ export default function AllProducts() {
     }
 
     return result
-  }, [products, selectedCategory, selectedColor, selectedSize, sortBy])
+  }, [products, selectedCategory, selectedColor, selectedSize, sortBy, saleOnly])
 
   const clearAll = () => {
     setSelectedCategory(null)
@@ -146,7 +153,7 @@ export default function AllProducts() {
             <h1 className="text-3xl md:text-4xl font-heading font-light tracking-tight" style={{ color: '#251e1a' }}>
               {selectedCategory
                 ? categories.find(c => c.id === selectedCategory)?.name || 'Productos'
-                : sortBy === 'price_asc' ? 'Ofertas' : sortBy === 'popular' ? 'Populares' : sortBy === 'newest' ? 'Nuevos' : 'Productos'
+                : saleOnly ? 'SALE' : sortBy === 'price_asc' ? 'Ofertas' : sortBy === 'popular' ? 'Populares' : sortBy === 'newest' ? 'Nuevos' : 'Productos'
               }
             </h1>
             <p className="text-sm text-gray-500 font-menu mt-1">{filtered.length} productos</p>
@@ -299,6 +306,10 @@ export default function AllProducts() {
                     <span className="absolute top-4 left-4 bg-red-600 text-white text-[10px] px-3 py-1 rounded-full font-bold tracking-wider">
                       AGOTADO
                     </span>
+                  ) : product.on_sale && product.sale_price ? (
+                    <span className="absolute top-4 left-4 bg-red-600 text-white text-[10px] px-3 py-1 rounded-full font-bold tracking-wider">
+                      SALE
+                    </span>
                   ) : product.is_new && (Date.now() - new Date(product.created_at).getTime() < 15 * 24 * 60 * 60 * 1000) ? (
                     <span className="absolute top-4 left-4 bg-primary text-white text-[10px] px-3 py-1 rounded-full font-bold tracking-wider">
                       NUEVO
@@ -337,9 +348,16 @@ export default function AllProducts() {
                       {product.name}
                     </h3>
                       <div className="flex items-center justify-between gap-2 mt-1.5">
-                      <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
-                        ${product.price?.toLocaleString('es-CO')}
-                      </p>
+                      {product.on_sale && product.sale_price ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-menu line-through" style={{ opacity: 0.4 }}>${product.price?.toLocaleString('es-CO')}</span>
+                          <span className="text-sm font-menu text-red-600 font-medium">${product.sale_price?.toLocaleString('es-CO')}</span>
+                        </div>
+                      ) : (
+                        <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
+                          ${product.price?.toLocaleString('es-CO')}
+                        </p>
+                      )}
                       {product.colors_list?.length > 0 && (
                          <div className="flex items-center gap-1">
                            {product.colors_list.map(c => (

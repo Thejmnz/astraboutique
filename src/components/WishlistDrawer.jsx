@@ -84,7 +84,15 @@ export default function WishlistDrawer() {
                       {item.name}
                     </Link>
                     <p className="text-sm font-menu text-primary mt-1">
-                      ${item.price?.toLocaleString('es-CO')} COP
+                      {item.on_sale && item.sale_price ? (
+                        <span className="flex items-center gap-2">
+                          <span className="line-through text-gray-400 text-xs">${item.price?.toLocaleString('es-CO')}</span>
+                          <span className="text-red-600">${item.sale_price?.toLocaleString('es-CO')}</span>
+                          <span>COP</span>
+                        </span>
+                      ) : (
+                        <span>${item.price?.toLocaleString('es-CO')} COP</span>
+                      )}
                     </p>
                   </div>
                   <button

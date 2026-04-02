@@ -68,6 +68,10 @@ export default function Products() {
                     <span className="absolute top-4 left-4 bg-red-600 text-white text-[10px] px-3 py-1 rounded-full font-bold tracking-wider">
                       AGOTADO
                     </span>
+                  ) : product.on_sale && product.sale_price ? (
+                    <span className="absolute top-4 left-4 bg-red-600 text-white text-[10px] px-3 py-1 rounded-full font-bold tracking-wider">
+                      SALE
+                    </span>
                   ) : product.is_new && (Date.now() - new Date(product.created_at).getTime() < 15 * 24 * 60 * 60 * 1000) ? (
                     <span className="absolute top-4 left-4 bg-primary text-white text-[10px] px-3 py-1 rounded-full font-bold tracking-wider">
                       NUEVO
@@ -97,9 +101,16 @@ export default function Products() {
                   {product.name}
                 </h3>
                 <div className="flex items-center justify-between gap-2 mt-1.5">
-                  <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
-                    ${product.price?.toLocaleString('es-CO')}
-                  </p>
+                  {product.on_sale && product.sale_price ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-menu line-through" style={{ opacity: 0.4 }}>${product.price?.toLocaleString('es-CO')}</span>
+                      <span className="text-sm font-menu text-red-600 font-medium">${product.sale_price?.toLocaleString('es-CO')}</span>
+                    </div>
+                  ) : (
+                    <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
+                      ${product.price?.toLocaleString('es-CO')}
+                    </p>
+                  )}
                   {product.colors_list?.length > 0 && (
                     <div className="flex items-center gap-1">
                       {product.colors_list.map(c => (

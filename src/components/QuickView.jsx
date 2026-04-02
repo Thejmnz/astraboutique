@@ -90,7 +90,16 @@ export default function QuickView({ product, onClose }) {
 
           <div className="p-6 md:p-8 flex flex-col justify-center md:overflow-y-auto">
             <h2 className="text-2xl font-heading font-light tracking-tight mb-2">{product.name}</h2>
-            <p className="text-lg font-menu mb-4">${product.price?.toLocaleString('es-CO')}</p>
+            <div className="flex items-center gap-3 mb-4">
+              {product.on_sale && product.sale_price ? (
+                <>
+                  <span className="text-base font-menu line-through text-gray-400">${product.price?.toLocaleString('es-CO')}</span>
+                  <span className="text-lg font-menu text-red-600 font-medium">${product.sale_price?.toLocaleString('es-CO')} COP</span>
+                </>
+              ) : (
+                <span className="text-lg font-menu">${product.price?.toLocaleString('es-CO')} COP</span>
+              )}
+            </div>
 
             {product.description && (
               <p className="text-gray-500 text-sm font-menu mb-6 leading-relaxed">{product.description}</p>

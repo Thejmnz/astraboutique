@@ -218,7 +218,14 @@ export default function ProductsList() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-gray-600">
-                      ${product.price?.toLocaleString('es-CO')} COP
+                      {product.on_sale && product.sale_price ? (
+                        <div className="flex flex-col">
+                          <span className="line-through text-xs text-gray-400">${product.price?.toLocaleString('es-CO')}</span>
+                          <span className="text-red-600 font-medium">${product.sale_price?.toLocaleString('es-CO')} COP</span>
+                        </div>
+                      ) : (
+                        <span>${product.price?.toLocaleString('es-CO')} COP</span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       {product.categories ? (

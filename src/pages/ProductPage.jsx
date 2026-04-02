@@ -44,7 +44,7 @@ export default function ProductPage() {
 
       const stored = JSON.parse(localStorage.getItem('recentlyViewed') || '[]')
       const filtered = stored.filter(p => p.id !== data.id)
-      filtered.unshift({ id: data.id, name: data.name, slug: data.slug, price: data.price, images: data.images })
+      filtered.unshift({ id: data.id, name: data.name, slug: data.slug, price: data.price, images: data.images, on_sale: data.on_sale, sale_price: data.sale_price })
       localStorage.setItem('recentlyViewed', JSON.stringify(filtered.slice(0, 4)))
       setRecentlyViewed(filtered.slice(0, 4))
     }
@@ -406,15 +406,33 @@ export default function ProductPage() {
               <h1 className="text-3xl md:text-4xl font-heading font-light tracking-tight">
                 {product.name}
               </h1>
+              {product.on_sale && product.sale_price && (
+                <span className="bg-red-600 text-white text-[10px] px-3 py-1 rounded-full font-bold tracking-wider">
+                  SALE
+                </span>
+              )}
               {isFullyOutOfStock && (
                 <span className="bg-red-600 text-white text-[10px] px-3 py-1 rounded-full font-bold tracking-wider">
                   AGOTADO
                 </span>
               )}
             </div>
-            <p className="text-base text-primary font-menu mb-6">
-              ${product.price?.toLocaleString('es-CO')}
-            </p>
+            <div className="flex items-center gap-3 mb-6">
+              {product.on_sale && product.sale_price ? (
+                <>
+                  <span className="text-base text-gray-400 font-menu line-through">
+                    ${product.price?.toLocaleString('es-CO')}
+                  </span>
+                  <span className="text-lg text-red-600 font-menu font-medium">
+                    ${product.sale_price?.toLocaleString('es-CO')} COP
+                  </span>
+                </>
+              ) : (
+                <p className="text-base text-primary font-menu">
+                  ${product.price?.toLocaleString('es-CO')} COP
+                </p>
+              )}
+            </div>
             
             {product.description && (
               <p className="text-gray-600 leading-relaxed font-menu mb-8 text-[12px]">
@@ -685,9 +703,16 @@ export default function ProductPage() {
                   )}
                 </div>
                 <h3 className="text-sm font-menu font-medium text-gray-800 truncate">{p.name}</h3>
-                <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
-                  ${p.price?.toLocaleString('es-CO')}
-                </p>
+                {p.on_sale && p.sale_price ? (
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-sm font-menu line-through" style={{ opacity: 0.4 }}>${p.price?.toLocaleString('es-CO')}</span>
+                    <span className="text-sm font-menu text-red-600 font-medium">${p.sale_price?.toLocaleString('es-CO')}</span>
+                  </div>
+                ) : (
+                  <p className="text-sm font-menu" style={{ opacity: 0.5 }}>
+                    ${p.price?.toLocaleString('es-CO')}
+                  </p>
+                )}
               </Link>
             ))}
           </div>

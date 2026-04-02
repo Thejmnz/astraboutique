@@ -79,7 +79,15 @@ export default function CartDrawer() {
                       Talla: {item.size}{item.colorName ? ` · ${item.colorName}` : ''}
                     </p>
                     <p className="text-sm font-menu text-primary mt-1">
-                      ${item.price?.toLocaleString('es-CO')} COP
+                      {item.originalPrice ? (
+                        <span className="flex items-center gap-2">
+                          <span className="line-through text-gray-400 text-xs">${item.originalPrice?.toLocaleString('es-CO')}</span>
+                          <span className="text-red-600">${item.price?.toLocaleString('es-CO')}</span>
+                          <span>COP</span>
+                        </span>
+                      ) : (
+                        <span>${item.price?.toLocaleString('es-CO')} COP</span>
+                      )}
                     </p>
                     <div className="flex items-center gap-3 mt-2">
                       <div className="flex items-center border border-gray-200">

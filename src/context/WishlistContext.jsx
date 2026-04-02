@@ -29,6 +29,8 @@ export function WishlistProvider({ children }) {
         price: product.price,
         image: product.images?.[0],
         slug: product.slug,
+        on_sale: product.on_sale || false,
+        sale_price: product.sale_price || null,
       }]
     })
   }

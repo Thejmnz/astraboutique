@@ -39,6 +39,8 @@ export default function AddProduct() {
     sizes: [{ size: '', stock: '' }],
     isNew: false,
     badge: '',
+    onSale: false,
+    salePrice: '',
     designNotes: '',
     fitNotes: '',
     fabricationCare: ''
@@ -229,6 +231,8 @@ export default function AddProduct() {
         images: formData.images,
         is_new: formData.isNew,
         badge: formData.badge || null,
+        on_sale: formData.onSale,
+        sale_price: formData.onSale ? parseInt(formData.salePrice) || null : null,
         design_notes: formData.designNotes,
         fit_notes: formData.fitNotes,
         fabrication_care: formData.fabricationCare
@@ -380,6 +384,44 @@ export default function AddProduct() {
                     }
                   </div>
                 </div>
+              </div>
+
+              <div className="border border-gray-200 rounded-lg p-4">
+                <label className="flex items-center gap-3 cursor-pointer mb-3">
+                  <input
+                    type="checkbox"
+                    checked={formData.onSale}
+                    onChange={(e) => setFormData({ ...formData, onSale: e.target.checked, salePrice: e.target.checked ? formData.salePrice : '' })}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Producto en descuento (SALE)</span>
+                </label>
+                {formData.onSale && (
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Precio original (COP)</label>
+                      <div className="w-full border border-gray-200 rounded-md py-2.5 px-3 bg-gray-50 text-sm text-gray-500">
+                        {formData.price ? `$${parseInt(formData.price).toLocaleString('es-CO')}` : '-'}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Precio de descuento (COP) *</label>
+                      <input
+                        type="number"
+                        value={formData.salePrice}
+                        onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
+                        className="w-full border border-gray-200 rounded-md py-2.5 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                        placeholder="Precio con descuento"
+                        min="0"
+                      />
+                      {formData.salePrice && formData.price && parseInt(formData.salePrice) < parseInt(formData.price) && (
+                        <p className="text-xs text-red-600 mt-1 font-medium">
+                          -{Math.round((1 - parseInt(formData.salePrice) / parseInt(formData.price)) * 100)}% de descuento
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>

@@ -45,12 +45,12 @@ export default function Header() {
   const fetchRandomProducts = async () => {
     const { data } = await supabase
       .from('products')
-      .select('id, name, slug, price, images')
+      .select('id, name, slug, price, images, on_sale, sale_price')
       .neq('archived', true)
       .limit(4)
     if (data) {
       setRandomProducts(data.map(p => ({
-        id: p.id, slug: p.slug, name: p.name, price: p.price, image: p.images?.[0]
+        id: p.id, slug: p.slug, name: p.name, price: p.price, image: p.images?.[0], on_sale: p.on_sale, sale_price: p.sale_price
       })))
     }
   }
@@ -61,15 +61,15 @@ export default function Header() {
         setSearching(true)
         const q = searchQuery.trim()
         const [res1, res2, res3, res4] = await Promise.all([
-          supabase.from('products').select('id, name, slug, price, images, colors(name)').neq('archived', true).ilike('name', `%${q}%`),
-          supabase.from('products').select('id, name, slug, price, images, colors(name)').neq('archived', true).ilike('description', `%${q}%`),
-          supabase.from('products').select('id, name, slug, price, images, colors(name)').neq('archived', true).ilike('code', `%${q}%`),
-          supabase.from('products').select('id, name, slug, price, images, colors(name)').neq('archived', true).ilike('color_name', `%${q}%`),
+          supabase.from('products').select('id, name, slug, price, images, colors(name), on_sale, sale_price').neq('archived', true).ilike('name', `%${q}%`),
+          supabase.from('products').select('id, name, slug, price, images, colors(name), on_sale, sale_price').neq('archived', true).ilike('description', `%${q}%`),
+          supabase.from('products').select('id, name, slug, price, images, colors(name), on_sale, sale_price').neq('archived', true).ilike('code', `%${q}%`),
+          supabase.from('products').select('id, name, slug, price, images, colors(name), on_sale, sale_price').neq('archived', true).ilike('color_name', `%${q}%`),
         ])
         const all = [...(res1.data || []), ...(res2.data || []), ...(res3.data || []), ...(res4.data || [])]
         const seen = new Set()
         const data = all.filter(p => { if (seen.has(p.id)) return false; seen.add(p.id); return true }).slice(0, 4)
-        setSearchResults((data || []).map(p => ({ id: p.id, slug: p.slug, name: p.name, price: p.price, image: p.images?.[0] })))
+        setSearchResults((data || []).map(p => ({ id: p.id, slug: p.slug, name: p.name, price: p.price, image: p.images?.[0], on_sale: p.on_sale, sale_price: p.sale_price })))
         setSearching(false)
       } else {
         setSearchResults([])
@@ -118,6 +118,7 @@ export default function Header() {
               )}
             </div>
             <Link className="hover:text-primary transition-colors whitespace-nowrap" to="/contacto">Contacto</Link>
+            <Link className="hover:text-red-600 transition-colors whitespace-nowrap text-red-600 font-bold" to="/productos?sale=true">SALE</Link>
           </nav>
         </div>
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
@@ -158,6 +159,7 @@ export default function Header() {
                     </div>
                   </div>
                   <Link className="text-sm font-medium text-gray-800 font-menu hover:text-primary transition-colors normal-case py-2" to="/contacto" onClick={() => setMobileMenuOpen(false)}>Contacto</Link>
+                  <Link className="text-sm font-bold text-red-600 font-menu hover:text-red-700 transition-colors normal-case py-2" to="/productos?sale=true" onClick={() => setMobileMenuOpen(false)}>SALE</Link>
                   <button className="text-sm font-medium text-gray-800 font-menu hover:text-primary transition-all normal-case flex items-center gap-2 py-2" onClick={() => { setIsWishlistOpen(true); setMobileMenuOpen(false) }}>
                     Lista de deseos
                     {wishlistCount > 0 && <span className="bg-primary text-white text-[8px] w-4 h-4 flex items-center justify-center rounded-full">{wishlistCount}</span>}
@@ -231,7 +233,14 @@ export default function Header() {
                             {product.image && <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />}
                           </div>
                           <h3 className="text-sm font-medium text-gray-800 font-menu">{product.name}</h3>
-                          <p className="text-sm font-menu" style={{ opacity: 0.5 }}>${product.price?.toLocaleString('es-CO')} COP</p>
+                          {product.on_sale && product.sale_price ? (
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-menu line-through" style={{ opacity: 0.4 }}>${product.price?.toLocaleString('es-CO')}</span>
+                              <span className="text-sm font-menu text-red-600 font-medium">${product.sale_price?.toLocaleString('es-CO')}</span>
+                            </div>
+                          ) : (
+                            <p className="text-sm font-menu" style={{ opacity: 0.5 }}>${product.price?.toLocaleString('es-CO')} COP</p>
+                          )}
                         </Link>
                       ))}
                     </div>
@@ -248,7 +257,14 @@ export default function Header() {
                           {product.image && <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />}
                         </div>
                         <h3 className="text-sm font-medium text-gray-800 font-menu">{product.name}</h3>
-                        <p className="text-sm font-menu" style={{ opacity: 0.5 }}>${product.price?.toLocaleString('es-CO')} COP</p>
+                        {product.on_sale && product.sale_price ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-menu line-through" style={{ opacity: 0.4 }}>${product.price?.toLocaleString('es-CO')}</span>
+                            <span className="text-sm font-menu text-red-600 font-medium">${product.sale_price?.toLocaleString('es-CO')}</span>
+                          </div>
+                        ) : (
+                          <p className="text-sm font-menu" style={{ opacity: 0.5 }}>${product.price?.toLocaleString('es-CO')} COP</p>
+                        )}
                       </Link>
                     ))}
                   </div>

@@ -29,6 +29,7 @@ export function CartProvider({ children }) {
 
   const addToCart = (product, size, quantity = 1, color = null) => {
     const cId = color?.id || null
+    const effectivePrice = (product.on_sale && product.sale_price) ? product.sale_price : product.price
     setCart(prevCart => {
       const existingIndex = prevCart.findIndex(
         item => matchItem(item, product.id, size, cId)
@@ -43,7 +44,8 @@ export function CartProvider({ children }) {
       return [...prevCart, {
         productId: product.id,
         name: product.name,
-        price: product.price,
+        price: effectivePrice,
+        originalPrice: (product.on_sale && product.sale_price) ? product.price : null,
         size: size,
         colorId: cId,
         colorName: color?.name || null,
