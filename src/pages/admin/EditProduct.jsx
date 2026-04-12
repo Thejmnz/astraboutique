@@ -343,7 +343,7 @@ export default function EditProduct() {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="p-8">
+      <div className="p-4 md:p-8">
           <p>Cargando...</p>
         </div>
       </AdminLayout>
@@ -363,7 +363,7 @@ export default function EditProduct() {
           <div className="bg-white rounded-lg border border-gray-100 p-6 mb-6">
             <h2 className="text-lg font-medium mb-4">Imágenes</h2>
             
-            <div className="grid grid-cols-4 gap-4 mb-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
               {formData.images.map((url, index) => (
                 <div
                   key={index}
@@ -422,7 +422,7 @@ export default function EditProduct() {
             <h2 className="text-lg font-medium mb-4">Información básica</h2>
             
             <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
                   <input
@@ -743,8 +743,8 @@ export default function EditProduct() {
             </div>
             
             <div className="space-y-3">
-              {formData.sizes.map((sizeItem, index) => (
-                <div key={index} className="flex items-center gap-3">
+                {formData.sizes.map((sizeItem, index) => (
+                <div key={index} className="flex items-center gap-2 sm:gap-3">
                   <input
                     type="text"
                     placeholder="Talla"
@@ -757,7 +757,7 @@ export default function EditProduct() {
                     placeholder="Stock"
                     value={sizeItem.stock}
                     onChange={(e) => handleSizeChange(index, 'stock', e.target.value)}
-                    className="w-32 border border-gray-200 rounded-md py-2.5 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                    className="w-24 sm:w-32 border border-gray-200 rounded-md py-2.5 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
                   />
                   {formData.sizes.length > 1 && (
                     <button

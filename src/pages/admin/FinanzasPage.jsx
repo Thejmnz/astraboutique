@@ -27,6 +27,7 @@ export default function FinanzasPage() {
     customer_name: '',
     sale_price: '',
     cost_price: '',
+    payment_status: 'pending',
     notes: '',
     receipt_url: ''
   })
@@ -163,6 +164,7 @@ export default function FinanzasPage() {
       sale_price: parseInt(formData.sale_price),
       cost_price: parseInt(formData.cost_price || 0),
       profit,
+      payment_status: formData.payment_status || 'pending',
       notes: formData.notes || null,
       receipt_url: formData.receipt_url || null
     }
@@ -180,7 +182,7 @@ export default function FinanzasPage() {
       return
     }
 
-    setFormData({ product_id: '', size: '', customer_name: '', sale_price: '', cost_price: '', notes: '', receipt_url: '' })
+    setFormData({ product_id: '', size: '', customer_name: '', sale_price: '', cost_price: '', payment_status: 'pending', notes: '', receipt_url: '' })
     setEditingSaleId(null)
     setShowForm(false)
     setSaving(false)
@@ -255,6 +257,7 @@ export default function FinanzasPage() {
       customer_name: sale.customer_name || '',
       sale_price: sale.sale_price?.toString() || '',
       cost_price: sale.cost_price?.toString() || '',
+      payment_status: sale.payment_status || 'pending',
       notes: sale.notes || '',
       receipt_url: sale.receipt_url || ''
     })
@@ -289,6 +292,14 @@ export default function FinanzasPage() {
     fetchWholesaleOrders()
   }
 
+  const toggleSalePaymentStatus = async (sale) => {
+    const statuses = ['pending', 'paid', 'partial']
+    const currentIdx = statuses.indexOf(sale.payment_status || 'pending')
+    const newStatus = statuses[(currentIdx + 1) % statuses.length]
+    await supabase.from('sales').update({ payment_status: newStatus }).eq('id', sale.id)
+    fetchSales()
+  }
+
   const parseWholesaleItems = (description) => {
     try {
       const items = JSON.parse(description)
@@ -302,6 +313,7 @@ export default function FinanzasPage() {
   const totalRevenue = filteredSales.reduce((sum, s) => sum + (s.sale_price || 0), 0)
   const totalCost = filteredSales.reduce((sum, s) => sum + (s.cost_price || 0), 0)
   const totalProfit = filteredSales.reduce((sum, s) => sum + (s.profit || 0), 0)
+  const salesPendingDebt = filteredSales.filter(s => s.payment_status !== 'paid').reduce((sum, s) => sum + (s.sale_price || 0), 0)
   const totalWholesaleCost = wholesaleOrders.reduce((sum, o) => sum + (o.cost || 0), 0)
   const uniqueSuppliers = [...new Set(wholesaleOrders.map(o => o.supplier).filter(Boolean))]
   const pendingDebt = wholesaleOrders.filter(o => o.payment_status !== 'paid').reduce((sum, o) => sum + (o.cost || 0), 0)
@@ -354,16 +366,16 @@ export default function FinanzasPage() {
         {tab === 'ventas' && (
           <>
             {showForm && (
-              <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+              <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 mb-8">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-lg font-medium">{editingSaleId ? 'Editar Venta' : 'Registrar Venta'}</h2>
-                  <button onClick={() => { setShowForm(false); setEditingSaleId(null); setFormData({ product_id: '', size: '', customer_name: '', sale_price: '', cost_price: '', notes: '', receipt_url: '' }) }} className="text-gray-400 hover:text-gray-600">
+                  <button onClick={() => { setShowForm(false); setEditingSaleId(null); setFormData({ product_id: '', size: '', customer_name: '', sale_price: '', cost_price: '', payment_status: 'pending', notes: '', receipt_url: '' }) }} className="text-gray-400 hover:text-gray-600">
                     <X size={20} />
                   </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div className="relative">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Producto *</label>
                       <div className="relative">
@@ -464,7 +476,7 @@ export default function FinanzasPage() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-3 gap-6">
+                  <div className="grid grid-cols-3 gap-3 sm:gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Precio de costo</label>
                       <input
@@ -508,6 +520,45 @@ export default function FinanzasPage() {
                   </div>
 
                   <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Estado del pago</label>
+                    <div className="flex gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, payment_status: 'paid' })}
+                        className={`flex-1 py-2.5 rounded-md text-sm font-medium border-2 transition-all ${
+                          formData.payment_status === 'paid'
+                            ? 'border-green-500 bg-green-50 text-green-700'
+                            : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                        }`}
+                      >
+                        Pagado
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, payment_status: 'pending' })}
+                        className={`flex-1 py-2.5 rounded-md text-sm font-medium border-2 transition-all ${
+                          formData.payment_status === 'pending'
+                            ? 'border-red-500 bg-red-50 text-red-700'
+                            : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                        }`}
+                      >
+                        Debe
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, payment_status: 'partial' })}
+                        className={`flex-1 py-2.5 rounded-md text-sm font-medium border-2 transition-all ${
+                          formData.payment_status === 'partial'
+                            ? 'border-yellow-500 bg-yellow-50 text-yellow-700'
+                            : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                        }`}
+                      >
+                        Pago Parcial
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Comprobante de pago</label>
                     <input
                       ref={receiptInputRef}
@@ -547,7 +598,7 @@ export default function FinanzasPage() {
                     >
                       {saving ? 'Guardando...' : editingSaleId ? 'Guardar cambios' : 'Registrar venta'}
                     </button>
-                    <button type="button" onClick={() => { setShowForm(false); setEditingSaleId(null); setFormData({ product_id: '', size: '', customer_name: '', sale_price: '', cost_price: '', notes: '', receipt_url: '' }) }} className="px-6 py-2.5 rounded-md font-medium text-gray-600 hover:bg-gray-100 transition-colors">
+                    <button type="button" onClick={() => { setShowForm(false); setEditingSaleId(null); setFormData({ product_id: '', size: '', customer_name: '', sale_price: '', cost_price: '', payment_status: 'pending', notes: '', receipt_url: '' }) }} className="px-6 py-2.5 rounded-md font-medium text-gray-600 hover:bg-gray-100 transition-colors">
                       Cancelar
                     </button>
                   </div>
@@ -555,7 +606,7 @@ export default function FinanzasPage() {
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 md:mb-8">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 md:mb-8">
               <div className="bg-white rounded-lg border border-gray-100 p-4 sm:p-6">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -589,6 +640,17 @@ export default function FinanzasPage() {
                   </div>
                 </div>
               </div>
+              <div className="bg-white rounded-lg border border-gray-100 p-4 sm:p-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 bg-orange-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <DollarSign size={18} className="text-orange-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-xs sm:text-sm text-gray-500">Por cobrar</span>
+                    <p className={`text-lg sm:text-2xl font-bold truncate ${salesPendingDebt > 0 ? 'text-orange-600' : 'text-green-600'}`}>{fmt(salesPendingDebt)}</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="flex items-center gap-4 mb-4">
@@ -618,6 +680,7 @@ export default function FinanzasPage() {
                         <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Producto</th>
                         <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Talla</th>
                         <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Cliente</th>
+                        <th className="text-left px-6 py-4 text-sm font-medium text-gray-600">Estado</th>
                         <th className="text-right px-6 py-4 text-sm font-medium text-gray-600">Costo</th>
                         <th className="text-right px-6 py-4 text-sm font-medium text-gray-600">Venta</th>
                         <th className="text-right px-6 py-4 text-sm font-medium text-gray-600">Utilidad</th>
@@ -634,6 +697,23 @@ export default function FinanzasPage() {
                           <td className="px-6 py-4"><span className="text-sm font-medium text-gray-800">{sale.product_name}</span></td>
                           <td className="px-6 py-4 text-sm text-gray-600">{sale.size || '-'}</td>
                           <td className="px-6 py-4 text-sm text-gray-600">{sale.customer_name || '-'}</td>
+                          <td className="px-6 py-4">
+                            <button
+                              onClick={() => toggleSalePaymentStatus(sale)}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-colors cursor-pointer ${
+                                sale.payment_status === 'paid' ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                : sale.payment_status === 'partial' ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                                : 'bg-red-100 text-red-700 hover:bg-red-200'
+                              }`}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full ${
+                                sale.payment_status === 'paid' ? 'bg-green-500'
+                                : sale.payment_status === 'partial' ? 'bg-yellow-500'
+                                : 'bg-red-500'
+                              }`} />
+                              {sale.payment_status === 'paid' ? 'Pagado' : sale.payment_status === 'partial' ? 'Parcial' : 'Debe'}
+                            </button>
+                          </td>
                           <td className="px-6 py-4 text-sm text-gray-600 text-right">{fmt(sale.cost_price)}</td>
                           <td className="px-6 py-4 text-sm font-medium text-gray-800 text-right">{fmt(sale.sale_price)}</td>
                           <td className={`px-6 py-4 text-sm font-bold text-right ${sale.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>{fmt(sale.profit)}</td>
@@ -660,9 +740,26 @@ export default function FinanzasPage() {
                       <div className="flex items-start justify-between mb-3">
                         <div>
                           <p className="font-medium text-gray-800 text-sm">{sale.product_name}</p>
-                          <p className="text-xs text-gray-400 mt-0.5">
-                            {new Date(sale.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
-                          </p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs text-gray-400">
+                              {new Date(sale.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </span>
+                            <button
+                              onClick={() => toggleSalePaymentStatus(sale)}
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold cursor-pointer ${
+                                sale.payment_status === 'paid' ? 'bg-green-100 text-green-700'
+                                : sale.payment_status === 'partial' ? 'bg-yellow-100 text-yellow-700'
+                                : 'bg-red-100 text-red-700'
+                              }`}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full ${
+                                sale.payment_status === 'paid' ? 'bg-green-500'
+                                : sale.payment_status === 'partial' ? 'bg-yellow-500'
+                                : 'bg-red-500'
+                              }`} />
+                              {sale.payment_status === 'paid' ? 'Pagado' : sale.payment_status === 'partial' ? 'Parcial' : 'Debe'}
+                            </button>
+                          </div>
                         </div>
                         <div className="flex items-center gap-1">
                           <button onClick={() => handleEditSale(sale)} className="p-1.5 text-gray-400 hover:text-blue-600"><Pencil size={15} /></button>
@@ -712,7 +809,7 @@ export default function FinanzasPage() {
         {tab === 'mayoreo' && (
           <>
             {showWholesaleForm && (
-              <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+              <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 mb-8">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-lg font-medium">{editingWholesaleId ? 'Editar Pedido Por Mayor' : 'Nuevo Pedido Por Mayor'}</h2>
                   <button onClick={() => { setShowWholesaleForm(false); setEditingWholesaleId(null); setWholesaleData({ order_date: new Date().toISOString().split('T')[0], supplier: '', payment_status: 'pending', notes: '', receipt_url: '', invoice_url: '' }); setWholesaleItems([{ product_name: '', price: '' }]) }} className="text-gray-400 hover:text-gray-600">
@@ -721,7 +818,7 @@ export default function FinanzasPage() {
                 </div>
 
                 <form onSubmit={handleWholesaleSubmit} className="space-y-5">
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Fecha del pedido</label>
                       <input
