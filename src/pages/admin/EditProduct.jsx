@@ -379,9 +379,14 @@ export default function EditProduct() {
 
     await supabase.from('product_colors').delete().eq('product_id', id)
     if (formData.colorIds.length > 0) {
-      await supabase.from('product_colors').insert(
+      const { error: colorsError } = await supabase.from('product_colors').insert(
         formData.colorIds.map(colorId => ({ product_id: id, color_id: colorId }))
       )
+      if (colorsError) {
+        alert('Error al guardar colores: ' + colorsError.message)
+        setSaving(false)
+        return
+      }
     }
 
     await supabase.from('product_sizes').delete().eq('product_id', id)
@@ -393,11 +398,16 @@ export default function EditProduct() {
         const colorMap = formData.sizeColorStock[sizeName] || {}
         formData.colorIds.forEach(cId => {
           const stock = parseInt(colorMap[cId]) || 0
-          rows.push({ product_id: id, size: sizeName, stock, color_id: cId })
+          rows.push({ product_id: id, size: sizeName, stock })
         })
       })
       if (rows.length > 0) {
-        await supabase.from('product_sizes').insert(rows)
+        const { error: sizesError } = await supabase.from('product_sizes').insert(rows)
+        if (sizesError) {
+          alert('Error al guardar tallas: ' + sizesError.message)
+          setSaving(false)
+          return
+        }
       }
     } else {
       const rows = formData.sizes
@@ -409,7 +419,12 @@ export default function EditProduct() {
         }))
         .filter(r => r.size)
       if (rows.length > 0) {
-        await supabase.from('product_sizes').insert(rows)
+        const { error: sizesError } = await supabase.from('product_sizes').insert(rows)
+        if (sizesError) {
+          alert('Error al guardar tallas: ' + sizesError.message)
+          setSaving(false)
+          return
+        }
       }
     }
 

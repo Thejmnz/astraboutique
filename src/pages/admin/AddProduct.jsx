@@ -291,16 +291,26 @@ export default function AddProduct() {
         const colorMap = formData.sizeColorStock[sizeName] || {}
         formData.colorIds.forEach(cId => {
           const stock = parseInt(colorMap[cId]) || 0
-          rows.push({ product_id: product.id, size: sizeName, stock, color_id: cId })
+          rows.push({ product_id: product.id, size: sizeName, stock })
         })
       })
       if (rows.length > 0) {
-        await supabase.from('product_sizes').insert(rows)
+        const { error: sizesError } = await supabase.from('product_sizes').insert(rows)
+        if (sizesError) {
+          alert('Error al guardar tallas: ' + sizesError.message)
+          setLoading(false)
+          return
+        }
       }
 
-      await supabase.from('product_colors').insert(
+      const { error: colorsError } = await supabase.from('product_colors').insert(
         formData.colorIds.map(colorId => ({ product_id: product.id, color_id: colorId }))
       )
+      if (colorsError) {
+        alert('Error al guardar colores: ' + colorsError.message)
+        setLoading(false)
+        return
+      }
     } else {
       const rows = formData.sizes
         .filter(s => s)
@@ -311,7 +321,12 @@ export default function AddProduct() {
         }))
         .filter(r => r.size)
       if (rows.length > 0) {
-        await supabase.from('product_sizes').insert(rows)
+        const { error: sizesError } = await supabase.from('product_sizes').insert(rows)
+        if (sizesError) {
+          alert('Error al guardar tallas: ' + sizesError.message)
+          setLoading(false)
+          return
+        }
       }
     }
 
