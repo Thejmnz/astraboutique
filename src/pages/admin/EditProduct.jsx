@@ -483,14 +483,19 @@ export default function EditProduct() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
-                      const a = document.createElement('a')
-                      a.href = url
-                      a.download = `producto-${index + 1}.webp`
-                      a.target = '_blank'
-                      document.body.appendChild(a)
-                      a.click()
-                      document.body.removeChild(a)
+                    onClick={async () => {
+                      try {
+                        const res = await fetch(url)
+                        const blob = await res.blob()
+                        const blobUrl = URL.createObjectURL(blob)
+                        const a = document.createElement('a')
+                        a.href = blobUrl
+                        a.download = `producto-${index + 1}.webp`
+                        a.click()
+                        URL.revokeObjectURL(blobUrl)
+                      } catch {
+                        window.open(url, '_blank')
+                      }
                     }}
                     className="absolute bottom-2 right-2 bg-white rounded-full p-1.5 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
                   >
