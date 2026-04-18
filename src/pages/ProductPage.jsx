@@ -79,7 +79,7 @@ export default function ProductPage() {
       setError('Por favor selecciona una talla')
       return
     }
-    const selectedSizeData = allSizes.find(ps => ps.size === selectedSize)
+    const selectedSizeData = allSizesForColor.find(ps => ps.size === selectedSize)
     if (!selectedSizeData || selectedSizeData.stock === 0) {
       setError('Esta talla no está disponible')
       return
@@ -89,7 +89,14 @@ export default function ProductPage() {
   }
 
   const allSizes = product.product_sizes || []
-  const isFullyOutOfStock = allSizes.length > 0 && allSizes.every(ps => ps.stock === 0)
+  const hasColorSizes = allSizes.some(ps => ps.color_id)
+  const allSizesForColor = hasColorSizes && selectedColor
+    ? allSizes.filter(ps => ps.color_id === selectedColor.id)
+    : allSizes.filter(ps => !ps.color_id).length > 0
+      ? allSizes.filter(ps => !ps.color_id)
+      : allSizes
+  const uniqueSizes = [...new Map(allSizesForColor.map(s => [s.size, s])).values()]
+  const isFullyOutOfStock = uniqueSizes.length > 0 && uniqueSizes.every(ps => ps.stock === 0)
 
   return (
     <div className="min-h-screen bg-background-light pt-24 md:pt-28 pb-16">
@@ -440,7 +447,7 @@ export default function ProductPage() {
               </p>
             )}
 
-            {allSizes.length > 0 && (
+            {uniqueSizes.length > 0 && (
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-3">
                   <button
@@ -451,7 +458,7 @@ export default function ProductPage() {
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {allSizes.map((ps) => {
+                  {uniqueSizes.map((ps) => {
                     const isOutOfStock = ps.stock === 0
                     return (
                       <button
@@ -498,7 +505,7 @@ export default function ProductPage() {
                     <button
                       type="button"
                       key={c.id}
-                      onClick={() => setSelectedColor(c)}
+                      onClick={() => { setSelectedColor(c); setSelectedSize('') }}
                       className={`flex items-center gap-1.5 px-2 py-1 border-2 rounded-full transition-all ${
                         selectedColor?.id === c.id
                           ? 'ring-2 ring-offset-2 ring-primary border-[#251E1A]'

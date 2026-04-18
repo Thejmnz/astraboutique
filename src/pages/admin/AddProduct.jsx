@@ -36,7 +36,8 @@ export default function AddProduct() {
     categoryId: '',
     description: '',
     images: [],
-    sizes: [{ size: '', stock: '' }],
+    sizes: [''],
+    sizeColorStock: {},
     isNew: false,
     badge: '',
     onSale: false,
@@ -123,23 +124,50 @@ export default function AddProduct() {
   }
 
   const handleAddSize = () => {
-    setFormData({
-      ...formData,
-      sizes: [...formData.sizes, { size: '', stock: '' }]
-    })
+    const newSizes = [...formData.sizes, '']
+    const newSizeColorStock = { ...formData.sizeColorStock }
+    if (formData.colorIds.length > 0) {
+      newSizeColorStock[''] = {}
+      formData.colorIds.forEach(cId => {
+        newSizeColorStock[''][cId] = '1'
+      })
+    }
+    setFormData({ ...formData, sizes: newSizes, sizeColorStock: newSizeColorStock })
   }
 
   const handleRemoveSize = (index) => {
-    setFormData({
-      ...formData,
-      sizes: formData.sizes.filter((_, i) => i !== index)
-    })
+    const sizeName = formData.sizes[index]
+    const newSizes = formData.sizes.filter((_, i) => i !== index)
+    const newSizeColorStock = { ...formData.sizeColorStock }
+    delete newSizeColorStock[sizeName]
+    setFormData({ ...formData, sizes: newSizes, sizeColorStock: newSizeColorStock })
   }
 
-  const handleSizeChange = (index, field, value) => {
+  const handleSizeNameChange = (index, newName) => {
+    const oldName = formData.sizes[index]
     const newSizes = [...formData.sizes]
-    newSizes[index][field] = value
-    setFormData({ ...formData, sizes: newSizes })
+    newSizes[index] = newName
+    const newSizeColorStock = { ...formData.sizeColorStock }
+    if (oldName && oldName !== newName) {
+      newSizeColorStock[newName] = newSizeColorStock[oldName] || {}
+      delete newSizeColorStock[oldName]
+    }
+    if (!newSizeColorStock[newName]) newSizeColorStock[newName] = {}
+    setFormData({ ...formData, sizes: newSizes, sizeColorStock: newSizeColorStock })
+  }
+
+  const handleSizeColorStockChange = (sizeName, colorId, value) => {
+    const newSizeColorStock = { ...formData.sizeColorStock }
+    if (!newSizeColorStock[sizeName]) newSizeColorStock[sizeName] = {}
+    newSizeColorStock[sizeName] = { ...newSizeColorStock[sizeName], [colorId]: value }
+    setFormData({ ...formData, sizeColorStock: newSizeColorStock })
+  }
+
+  const handleSimpleStockChange = (index, value) => {
+    const sizeName = formData.sizes[index]
+    const newSizeColorStock = { ...formData.sizeColorStock }
+    newSizeColorStock[sizeName] = { __stock: value }
+    setFormData({ ...formData, sizeColorStock: newSizeColorStock })
   }
 
   const handleColorImageUpload = async (e) => {
@@ -184,7 +212,17 @@ export default function AddProduct() {
       return
     }
 
-    setFormData({ ...formData, colorIds: [...formData.colorIds, data.id] })
+    const newColorIds = [...formData.colorIds, data.id]
+    const newSizeColorStock = { ...formData.sizeColorStock }
+    formData.sizes.forEach(s => {
+      if (!newSizeColorStock[s]) newSizeColorStock[s] = {}
+      newSizeColorStock[s][data.id] = '1'
+    })
+    setFormData({
+      ...formData,
+      colorIds: newColorIds,
+      sizeColorStock: newSizeColorStock
+    })
     setColors(prev => [...prev, data])
     setShowNewColor(false)
     setNewColorName('')
@@ -246,26 +284,41 @@ export default function AddProduct() {
       return
     }
 
-    const sizesToInsert = formData.sizes
-      .filter(s => s.size && s.stock)
-      .map(s => ({
-        product_id: product.id,
-        size: s.size,
-        stock: parseInt(s.stock)
-      }))
-
-    if (sizesToInsert.length > 0) {
-      await supabase.from('product_sizes').insert(sizesToInsert)
-    }
-
     if (formData.colorIds.length > 0) {
+      const rows = []
+      formData.sizes.forEach(sizeName => {
+        if (!sizeName) return
+        const colorMap = formData.sizeColorStock[sizeName] || {}
+        formData.colorIds.forEach(cId => {
+          const stock = parseInt(colorMap[cId]) || 0
+          rows.push({ product_id: product.id, size: sizeName, stock, color_id: cId })
+        })
+      })
+      if (rows.length > 0) {
+        await supabase.from('product_sizes').insert(rows)
+      }
+
       await supabase.from('product_colors').insert(
         formData.colorIds.map(colorId => ({ product_id: product.id, color_id: colorId }))
       )
+    } else {
+      const rows = formData.sizes
+        .filter(s => s)
+        .map(sizeName => ({
+          product_id: product.id,
+          size: sizeName,
+          stock: parseInt(formData.sizeColorStock[sizeName]?.__stock) || 0
+        }))
+        .filter(r => r.size)
+      if (rows.length > 0) {
+        await supabase.from('product_sizes').insert(rows)
+      }
     }
 
     navigate('/admin/productos')
   }
+
+  const hasColors = formData.colorIds.length > 0
 
   return (
     <AdminLayout>
@@ -497,12 +550,26 @@ export default function AddProduct() {
                           key={c.id}
                           type="button"
                           onClick={() => {
-                            setFormData({
-                              ...formData,
-                              colorIds: formData.colorIds.includes(c.id)
-                                ? formData.colorIds.filter(id => id !== c.id)
-                                : [...formData.colorIds, c.id]
-                            })
+                            const isSelected = formData.colorIds.includes(c.id)
+                            const newColorIds = isSelected
+                              ? formData.colorIds.filter(cid => cid !== c.id)
+                              : [...formData.colorIds, c.id]
+                            const newSizeColorStock = { ...formData.sizeColorStock }
+                            if (isSelected) {
+                              formData.sizes.forEach(s => {
+                                if (newSizeColorStock[s]) {
+                                  const m = { ...newSizeColorStock[s] }
+                                  delete m[c.id]
+                                  newSizeColorStock[s] = m
+                                }
+                              })
+                            } else {
+                              formData.sizes.forEach(s => {
+                                if (!newSizeColorStock[s]) newSizeColorStock[s] = {}
+                                newSizeColorStock[s][c.id] = '1'
+                              })
+                            }
+                            setFormData({ ...formData, colorIds: newColorIds, sizeColorStock: newSizeColorStock })
                             setShowNewColor(false)
                           }}
                           className={`relative w-12 h-12 rounded-lg overflow-hidden border-2 transition-all ${
@@ -655,7 +722,7 @@ export default function AddProduct() {
             </div>
           </div>
 
-          {/* Sizes */}
+          {/* Sizes & Stock */}
           <div className="bg-white rounded-lg border border-gray-100 p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium">Tallas y Stock</h2>
@@ -682,45 +749,125 @@ export default function AddProduct() {
               />
               <p className="text-xs text-gray-400 mt-1">Se muestra en la imagen del producto (max 20 caracteres). Si tambien esta marcado como nuevo, se muestran ambas etiquetas.</p>
             </div>
-            
-            <div className="space-y-3">
-              {formData.sizes.map((sizeItem, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <input
-                    type="text"
-                    placeholder="Talla (ej: S, M, L, XL)"
-                    value={sizeItem.size}
-                    onChange={(e) => handleSizeChange(index, 'size', e.target.value)}
-                    className="flex-1 border border-gray-200 rounded-md py-2.5 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Stock"
-                    value={sizeItem.stock}
-                    onChange={(e) => handleSizeChange(index, 'stock', e.target.value)}
-                    className="w-32 border border-gray-200 rounded-md py-2.5 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
-                  />
-                  {formData.sizes.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveSize(index)}
-                      className="p-2 text-gray-400 hover:text-red-600 transition-colors"
-                    >
-                      <X size={20} />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
 
-            <button
-              type="button"
-              onClick={handleAddSize}
-              className="flex items-center gap-2 text-sm text-primary hover:underline mt-4"
-            >
-              <Plus size={16} />
-              Agregar talla
-            </button>
+            {hasColors ? (
+              <div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr>
+                        <th className="text-left text-sm font-medium text-gray-700 pb-3 pr-3 w-28">Talla</th>
+                        {formData.colorIds.map(colorId => {
+                          const color = colors.find(c => c.id === colorId)
+                          if (!color) return null
+                          return (
+                            <th key={colorId} className="text-center text-sm font-medium text-gray-700 pb-3 px-2 min-w-[80px]">
+                              <div className="flex flex-col items-center gap-1">
+                                <span className="w-6 h-6 rounded-full overflow-hidden border border-gray-200 flex-shrink-0 mx-auto">
+                                  {color.hex ? (
+                                    <span className="block w-full h-full" style={{ backgroundColor: color.hex }} />
+                                  ) : (
+                                    <img src={color.image_url} alt={color.name} className="w-full h-full object-cover" />
+                                  )}
+                                </span>
+                                <span className="text-xs text-gray-500 truncate max-w-[80px]">{color.name}</span>
+                              </div>
+                            </th>
+                          )
+                        })}
+                        <th className="w-10"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {formData.sizes.map((sizeName, index) => (
+                        <tr key={index}>
+                          <td className="pr-3 pb-2">
+                            <input
+                              type="text"
+                              placeholder="Talla"
+                              value={sizeName}
+                              onChange={(e) => handleSizeNameChange(index, e.target.value)}
+                              className="w-full border border-gray-200 rounded-md py-2 px-3 focus:ring-1 focus:ring-primary focus:outline-none text-sm"
+                            />
+                          </td>
+                          {formData.colorIds.map(colorId => (
+                            <td key={colorId} className="text-center pb-2 px-2">
+                              <input
+                                type="number"
+                                placeholder="0"
+                                value={(formData.sizeColorStock[sizeName] || {})[colorId] || ''}
+                                onChange={(e) => handleSizeColorStockChange(sizeName, colorId, e.target.value)}
+                                className="w-full border border-gray-200 rounded-md py-2 px-2 text-center text-sm focus:ring-1 focus:ring-primary focus:outline-none"
+                                min="0"
+                              />
+                            </td>
+                          ))}
+                          <td className="pb-2 pl-1">
+                            {formData.sizes.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveSize(index)}
+                                className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                              >
+                                <X size={16} />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddSize}
+                  className="flex items-center gap-2 text-sm text-primary hover:underline mt-3"
+                >
+                  <Plus size={16} />
+                  Agregar talla
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="space-y-3">
+                  {formData.sizes.map((sizeName, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <input
+                        type="text"
+                        placeholder="Talla (ej: S, M, L, XL)"
+                        value={sizeName}
+                        onChange={(e) => handleSizeNameChange(index, e.target.value)}
+                        className="flex-1 border border-gray-200 rounded-md py-2.5 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Stock"
+                        value={formData.sizeColorStock[sizeName]?.__stock || ''}
+                        onChange={(e) => handleSimpleStockChange(index, e.target.value)}
+                        className="w-32 border border-gray-200 rounded-md py-2.5 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                      />
+                      {formData.sizes.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSize(index)}
+                          className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                        >
+                          <X size={20} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddSize}
+                  className="flex items-center gap-2 text-sm text-primary hover:underline mt-4"
+                >
+                  <Plus size={16} />
+                  Agregar talla
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Actions */}
