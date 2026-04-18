@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import AdminLayout from './AdminLayout'
-import { X, Upload, Plus, Trash2, GripVertical, Check } from 'lucide-react'
+import { X, Upload, Plus, Trash2, GripVertical, Check, Download } from 'lucide-react'
 import RichTextEditor from '../../components/RichTextEditor'
 
 export default function EditProduct() {
@@ -480,6 +480,21 @@ export default function EditProduct() {
                     className="absolute top-2 right-2 bg-white rounded-full p-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <X size={16} className="text-gray-600" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = `producto-${index + 1}.webp`
+                      a.target = '_blank'
+                      document.body.appendChild(a)
+                      a.click()
+                      document.body.removeChild(a)
+                    }}
+                    className="absolute bottom-2 right-2 bg-white rounded-full p-1.5 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Download size={14} className="text-gray-600" />
                   </button>
                   {index === 0 && (
                     <span className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
