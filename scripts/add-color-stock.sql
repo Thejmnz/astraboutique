@@ -1,5 +1,10 @@
--- Run this in Supabase SQL Editor to add color_id to product_sizes
+-- Run ALL of this in Supabase SQL Editor
+
+-- 1. Add color_id column to product_sizes
 ALTER TABLE product_sizes ADD COLUMN IF NOT EXISTS color_id uuid REFERENCES colors(id);
 
--- Optional: remove the stock column from product_colors if it exists
--- ALTER TABLE product_colors DROP COLUMN IF EXISTS stock;
+-- 2. Drop the old unique constraint on (product_id, size)
+ALTER TABLE product_sizes DROP CONSTRAINT IF EXISTS product_sizes_product_id_size_key;
+
+-- 3. Add new unique constraint that includes color_id
+ALTER TABLE product_sizes ADD CONSTRAINT product_sizes_product_id_size_color_key UNIQUE (product_id, size, color_id);

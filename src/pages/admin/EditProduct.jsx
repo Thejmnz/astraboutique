@@ -398,7 +398,7 @@ export default function EditProduct() {
         const colorMap = formData.sizeColorStock[sizeName] || {}
         formData.colorIds.forEach(cId => {
           const stock = parseInt(colorMap[cId]) || 0
-          rows.push({ product_id: id, size: sizeName, stock })
+          rows.push({ product_id: id, size: sizeName, stock, color_id: cId })
         })
       })
       if (rows.length > 0) {
