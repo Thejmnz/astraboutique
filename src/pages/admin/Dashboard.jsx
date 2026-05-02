@@ -192,7 +192,11 @@ export default function Dashboard() {
                     {expandedCats[cat.id] && (
                       <div className="px-4 sm:px-6 pb-4">
                         {(() => {
-                          const allSizes = [...new Set(cat.products.flatMap(p => (p.product_sizes || []).map(ps => ps.size)))].sort()
+                          const allSizes = [...new Set(cat.products.flatMap(p => (p.product_sizes || []).map(ps => ps.size)))].sort((a, b) => {
+                            const na = parseFloat(a), nb = parseFloat(b)
+                            if (!isNaN(na) && !isNaN(nb)) return na - nb
+                            return a.localeCompare(b)
+                          })
                           const activeFilter = sizeFilter[cat.id] || null
                           const filtered = activeFilter
                             ? cat.products.filter(p => (p.product_sizes || []).some(ps => ps.size === activeFilter && ps.stock > 0))
@@ -260,7 +264,11 @@ export default function Dashboard() {
                                               <span className="text-gray-400 text-xs">Sin tallas</span>
                                             ) : (
                                               <div className="flex flex-wrap gap-1">
-                                                {sizes.map(ps => (
+                                                {sizes.sort((a, b) => {
+                                                  const na = parseFloat(a.size), nb = parseFloat(b.size)
+                                                  if (!isNaN(na) && !isNaN(nb)) return na - nb
+                                                  return a.size.localeCompare(b.size)
+                                                }).map(ps => (
                                                   <span
                                                     key={ps.size}
                                                     className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
