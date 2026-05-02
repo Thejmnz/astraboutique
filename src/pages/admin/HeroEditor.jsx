@@ -1,139 +1,133 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import AdminLayout from './AdminLayout'
-import { Save, Plus, Trash2, Monitor, Smartphone } from 'lucide-react'
+import { Plus, Trash2, Monitor, Smartphone, Upload, Image as ImageIcon } from 'lucide-react'
 
 export default function HeroEditor() {
-  const [callouts, setCallouts] = useState([])
   const [isDesktop, setIsDesktop] = useState(true)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const [dragging, setDragging] = useState(null)
-  const [dragType, setDragType] = useState(null)
-  const [editingId, setEditingId] = useState(null)
-  const [editTitle, setEditTitle] = useState('')
-  const [editDesc, setEditDesc] = useState('')
-  const containerRef = useRef(null)
+  const [heroImages, setHeroImages] = useState({ desktop: [], mobile: [] })
+  const [uploadingImage, setUploadingImage] = useState(null)
+  const [previewIndex, setPreviewIndex] = useState(0)
+  const fileInputRef = useRef(null)
 
-  const fetchCallouts = async () => {
+  const fetchHeroImages = async () => {
     const { data } = await supabase
-      .from('hero_callouts')
+      .from('hero_images')
       .select('*')
-      .eq('is_desktop', isDesktop)
       .order('position', { ascending: true })
-    setCallouts(data || [])
-    setLoading(false)
+    if (data) {
+      const images = { desktop: [], mobile: [] }
+      data.forEach(row => {
+        images[row.type].push({ id: row.id, url: row.url, position: row.position })
+      })
+      setHeroImages(images)
+    }
   }
 
   useEffect(() => {
-    fetchCallouts()
-  }, [isDesktop])
-
-  const handleMouseDown = useCallback((e, id, type) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setDragging(id)
-    setDragType(type)
+    fetchHeroImages()
   }, [])
 
   useEffect(() => {
-    if (!dragging || !containerRef.current) return
+    setPreviewIndex(0)
+  }, [isDesktop])
 
-    const handleMouseMove = (e) => {
-      const rect = containerRef.current.getBoundingClientRect()
-      const x = ((e.clientX - rect.left) / rect.width) * 100
-      const y = ((e.clientY - rect.top) / rect.height) * 100
+  const handleImageUpload = async (e, type) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
 
-      setCallouts(prev => prev.map(c => {
-        if (c.id !== dragging) return c
-        if (dragType === 'point') {
-          return { ...c, point_x: Math.max(0, Math.min(100, x)), point_y: Math.max(0, Math.min(100, y)) }
+    setUploadingImage(type)
+
+    try {
+      const currentImages = heroImages[type]
+      const newImages = []
+
+      for (const file of files) {
+        const { convertToWebP } = await import('../../lib/convertToWebP')
+        const webpFile = await convertToWebP(file)
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.webp`
+        const filePath = `hero/${type}/${fileName}`
+
+        const { error: uploadError } = await supabase.storage
+          .from('hero')
+          .upload(filePath, webpFile)
+
+        if (uploadError) {
+          alert('Error al subir imagen: ' + uploadError.message)
+          continue
         }
-        if (dragType === 'box') {
-          const pointXpx = (c.point_x / 100) * rect.width
-          const pointYpx = (c.point_y / 100) * rect.height
-          const boxXpx = e.clientX - rect.left
-          const boxYpx = e.clientY - rect.top
-          return { ...c, box_offset_x: Math.round(boxXpx - pointXpx), box_offset_y: Math.round(boxYpx - pointYpx) }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('hero')
+          .getPublicUrl(filePath)
+
+        const position = currentImages.length + newImages.length
+
+        const { data, error: insertError } = await supabase
+          .from('hero_images')
+          .insert([{ type, url: publicUrl, position }])
+          .select()
+
+        if (insertError) {
+          alert('Error al guardar: ' + insertError.message)
+          continue
         }
-        return c
+
+        if (data) newImages.push(data[0])
+      }
+
+      setHeroImages(prev => ({
+        ...prev,
+        [type]: [...prev[type], ...newImages]
       }))
+    } catch (err) {
+      alert('Error: ' + err.message)
+    } finally {
+      setUploadingImage(null)
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
-
-    const handleMouseUp = () => {
-      setDragging(null)
-      setDragType(null)
-    }
-
-    window.addEventListener('mousemove', handleMouseMove)
-    window.addEventListener('mouseup', handleMouseUp)
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mouseup', handleMouseUp)
-    }
-  }, [dragging, dragType])
-
-  const handleSave = async () => {
-    setSaving(true)
-    setSaved(false)
-    for (const callout of callouts) {
-      await supabase.from('hero_callouts').update({
-        title: callout.title,
-        description: callout.description,
-        point_x: callout.point_x,
-        point_y: callout.point_y,
-        box_offset_x: callout.box_offset_x,
-        box_offset_y: callout.box_offset_y,
-        position: callout.position,
-      }).eq('id', callout.id)
-    }
-    setSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
   }
 
-  const addCallout = async () => {
-    const { data } = await supabase.from('hero_callouts').insert([{
-      title: 'Nuevo Callout',
-      description: 'Descripcion',
-      point_x: 50,
-      point_y: 50,
-      box_offset_x: isDesktop ? 150 : 100,
-      box_offset_y: -80,
-      is_desktop: isDesktop,
-      position: callouts.length,
-    }]).select()
-    if (data) setCallouts(prev => [...prev, data[0]])
-  }
-
-  const deleteCallout = async (id) => {
-    await supabase.from('hero_callouts').delete().eq('id', id)
-    setCallouts(prev => prev.filter(c => c.id !== id))
-  }
-
-  const startEdit = (callout) => {
-    setEditingId(callout.id)
-    setEditTitle(callout.title)
-    setEditDesc(callout.description || '')
-  }
-
-  const saveEdit = (id) => {
-    setCallouts(prev => prev.map(c => {
-      if (c.id !== id) return c
-      return { ...c, title: editTitle, description: editDesc }
+  const deleteImage = async (type, id) => {
+    await supabase.from('hero_images').delete().eq('id', id)
+    setHeroImages(prev => ({
+      ...prev,
+      [type]: prev[type].filter(img => img.id !== id)
     }))
-    setEditingId(null)
+    setPreviewIndex(0)
   }
+
+  const moveImage = async (type, fromIndex, toIndex) => {
+    if (fromIndex === toIndex) return
+    const images = [...heroImages[type]]
+    const [moved] = images.splice(fromIndex, 1)
+    images.splice(toIndex, 0, moved)
+
+    setHeroImages(prev => ({ ...prev, [type]: images }))
+
+    for (let i = 0; i < images.length; i++) {
+      await supabase.from('hero_images').update({ position: i }).eq('id', images[i].id)
+    }
+  }
+
+  const triggerUpload = (type) => {
+    setUploadingImage(type)
+    fileInputRef.current?.click()
+  }
+
+  const handleFileSelected = (e) => {
+    if (uploadingImage) {
+      handleImageUpload(e, uploadingImage)
+    }
+  }
+
+  const currentHeroImages = isDesktop ? heroImages.desktop : heroImages.mobile
 
   return (
     <AdminLayout>
       <div className="p-8">
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-display">Editor Hero</h1>
-            <p className="text-gray-500 mt-1">Arrastra los puntos y cajas para posicionar los callouts</p>
-          </div>
+          <h1 className="text-2xl font-display">Editor Hero</h1>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsDesktop(!isDesktop)}
@@ -144,142 +138,108 @@ export default function HeroEditor() {
               {isDesktop ? <Monitor size={16} /> : <Smartphone size={16} />}
               {isDesktop ? 'Desktop' : 'Mobile'}
             </button>
-            <button
-              onClick={addCallout}
-              className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
-            >
-              <Plus size={16} />
-              Agregar
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium text-white transition-all ${
-                saved ? 'bg-green-600' : 'bg-primary hover:opacity-90'
-              }`}
-            >
-              <Save size={16} />
-              {saving ? 'Guardando...' : saved ? 'Guardado!' : 'Guardar'}
-            </button>
           </div>
         </div>
 
-        {loading ? (
-          <p className="text-gray-500">Cargando...</p>
-        ) : (
-          <div className="border border-gray-200 rounded-lg overflow-hidden bg-gray-100">
-            <div
-              ref={containerRef}
-              className={`relative w-full bg-black select-none ${isDesktop ? 'aspect-video' : 'aspect-[9/16] max-w-[390px] mx-auto'}`}
-            >
-              <img
-                src="/hero.png"
-                alt="Hero"
-                className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-              />
+        <div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleFileSelected}
+          />
 
-              {callouts.map((callout) => {
-                const boxX = `calc(${callout.point_x}% + ${callout.box_offset_x}px)`
-                const boxY = `calc(${callout.point_y}% + ${callout.box_offset_y}px)`
+          <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                {isDesktop ? <Monitor size={16} className="text-gray-500" /> : <Smartphone size={16} className="text-gray-500" />}
+                <span className="text-sm font-medium">Imagenes {isDesktop ? 'Desktop' : 'Mobile'}</span>
+                <span className="text-xs text-gray-400">({currentHeroImages.length})</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => triggerUpload(isDesktop ? 'desktop' : 'mobile')}
+                  disabled={uploadingImage === (isDesktop ? 'desktop' : 'mobile')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white text-xs rounded-md hover:opacity-90 transition-colors disabled:opacity-50"
+                >
+                  <Upload size={12} />
+                  {uploadingImage ? 'Subiendo...' : 'Subir imagenes'}
+                </button>
+              </div>
+            </div>
 
-                return (
-                  <div key={callout.id}>
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 5 }}>
-                      <path
-                        d={`M ${(callout.point_x / 100) * 100}%,${(callout.point_y / 100) * 100}%`}
-                        fill="none"
-                        stroke="rgba(255,255,255,0.8)"
-                        strokeWidth="1"
-                      />
-                    </svg>
-
-                    <div
-                      className="absolute w-4 h-4 bg-blue-500 rounded-full cursor-move z-30 border-2 border-white shadow-lg hover:bg-blue-600 transition-colors"
-                      style={{
-                        left: `${callout.point_x}%`,
-                        top: `${callout.point_y}%`,
-                        transform: 'translate(-50%, -50%)',
-                      }}
-                      onMouseDown={(e) => handleMouseDown(e, callout.id, 'point')}
+            {currentHeroImages.length === 0 ? (
+              <div
+                className="p-12 flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:text-gray-500 hover:bg-gray-50 transition-colors"
+                onClick={() => triggerUpload(isDesktop ? 'desktop' : 'mobile')}
+              >
+                <ImageIcon size={40} />
+                <span className="text-sm mt-2">Sin imagenes</span>
+                <span className="text-xs mt-1">Haz click para agregar</span>
+              </div>
+            ) : (
+              <>
+                <div className={`relative bg-black ${isDesktop ? 'aspect-video' : 'aspect-[9/16] max-w-[390px] mx-auto'}`}>
+                  {currentHeroImages.map((img, i) => (
+                    <img
+                      key={img.id}
+                      src={img.url}
+                      alt={`Hero ${i + 1}`}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      style={{ opacity: i === previewIndex ? 1 : 0, transition: 'opacity 0.3s' }}
                     />
-
+                  ))}
+                </div>
+                <div className="p-3 flex gap-2 overflow-x-auto bg-gray-50">
+                  {currentHeroImages.map((img, i) => (
                     <div
-                      className={`absolute bg-black/80 backdrop-blur-sm px-3 py-2 rounded-lg border border-blue-400 z-20 ${
-                        editingId === callout.id ? 'cursor-text' : 'cursor-move'
+                      key={img.id}
+                      className={`relative flex-shrink-0 rounded-md overflow-hidden cursor-pointer border-2 transition-colors ${
+                        i === previewIndex ? 'border-primary' : 'border-transparent hover:border-gray-300'
                       }`}
-                      style={{
-                        left: boxX,
-                        top: boxY,
-                        transform: 'translate(-50%, -50%)',
-                        minWidth: editingId === callout.id ? '180px' : 'auto',
-                      }}
-                      onMouseDown={(e) => {
-                        if (editingId === callout.id) return
-                        handleMouseDown(e, callout.id, 'box')
-                      }}
-                      onDoubleClick={() => startEdit(callout)}
+                      onClick={() => setPreviewIndex(i)}
                     >
-                      {editingId === callout.id ? (
-                        <div className="space-y-1.5" onClick={(e) => e.stopPropagation()}>
-                          <input
-                            type="text"
-                            value={editTitle}
-                            onChange={(e) => setEditTitle(e.target.value)}
-                            onKeyDown={(e) => { if (e.key === 'Enter') saveEdit(callout.id) }}
-                            className="bg-white/10 text-white text-xs font-bold border-b border-white/30 outline-none w-full px-1 py-0.5"
-                            autoFocus
-                            onMouseDown={(e) => e.stopPropagation()}
-                          />
-                          <input
-                            type="text"
-                            value={editDesc}
-                            onChange={(e) => setEditDesc(e.target.value)}
-                            onKeyDown={(e) => { if (e.key === 'Enter') saveEdit(callout.id) }}
-                            className="bg-white/10 text-white/70 text-[10px] outline-none w-full px-1 py-0.5"
-                            onMouseDown={(e) => e.stopPropagation()}
-                          />
+                      <img
+                        src={img.url}
+                        alt={`Thumb ${i + 1}`}
+                        className={`h-16 w-auto object-cover ${isDesktop ? 'aspect-video' : 'aspect-[9/16] h-20'}`}
+                      />
+                      <div className="absolute inset-0 group">
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+                          {i > 0 && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); moveImage(isDesktop ? 'desktop' : 'mobile', i, i - 1) }}
+                              className="p-1 bg-white rounded-full text-gray-700 text-xs"
+                            >
+                              &larr;
+                            </button>
+                          )}
                           <button
-                            onClick={() => saveEdit(callout.id)}
-                            className="text-blue-400 text-[10px] font-bold hover:text-blue-300"
-                            onMouseDown={(e) => e.stopPropagation()}
+                            onClick={(e) => { e.stopPropagation(); deleteImage(isDesktop ? 'desktop' : 'mobile', img.id) }}
+                            className="p-1 bg-red-500 rounded-full text-white"
                           >
-                            OK
+                            <Trash2 size={10} />
                           </button>
+                          {i < currentHeroImages.length - 1 && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); moveImage(isDesktop ? 'desktop' : 'mobile', i, i + 1) }}
+                              className="p-1 bg-white rounded-full text-gray-700 text-xs"
+                            >
+                              &rarr;
+                            </button>
+                          )}
                         </div>
-                      ) : (
-                        <>
-                          <p className="text-white text-xs font-bold">{callout.title}</p>
-                          <p className="text-white/70 text-[10px]">{callout.description}</p>
-                        </>
-                      )}
+                      </div>
+                      <span className="absolute top-0.5 left-0.5 bg-black/60 text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-sm">{i + 1}</span>
                     </div>
-
-                    <button
-                      onClick={() => deleteCallout(callout.id)}
-                      className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] z-40 opacity-0 hover:opacity-100 transition-opacity"
-                      style={{
-                        left: boxX,
-                        top: boxY,
-                        transform: 'translate(-50%, -200%)',
-                      }}
-                    >
-                      <Trash2 size={10} />
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
-
-            <div className="p-4 bg-white">
-              <p className="text-xs text-gray-500">
-                <span className="font-medium text-gray-700">Instrucciones:</span>{' '}
-                Arrastra el <span className="inline-block w-3 h-3 bg-blue-500 rounded-full mx-1" /> punto azul para mover el pin.{' '}
-                Arrastra la caja de texto para reposicionarla.{' '}
-                Doble click en la caja para editar texto.
-              </p>
-            </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </AdminLayout>
   )

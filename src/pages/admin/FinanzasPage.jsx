@@ -101,6 +101,33 @@ export default function FinanzasPage() {
   const selectedProduct = products.find(p => p.id === formData.product_id)
   const availableSizes = selectedProduct?.product_sizes || []
 
+  const decrementStock = async (productId, size) => {
+    if (!productId || !size) return
+    const { data: ps } = await supabase
+      .from('product_sizes')
+      .select('id, stock')
+      .eq('product_id', productId)
+      .eq('size', size)
+      .limit(1)
+      .maybeSingle()
+    if (!ps || ps.stock <= 0) return false
+    await supabase.from('product_sizes').update({ stock: ps.stock - 1 }).eq('id', ps.id)
+    return true
+  }
+
+  const incrementStock = async (productId, size) => {
+    if (!productId || !size) return
+    const { data: ps } = await supabase
+      .from('product_sizes')
+      .select('id, stock')
+      .eq('product_id', productId)
+      .eq('size', size)
+      .limit(1)
+      .maybeSingle()
+    if (!ps) return
+    await supabase.from('product_sizes').update({ stock: ps.stock + 1 }).eq('id', ps.id)
+  }
+
   const handleReceiptUpload = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -171,12 +198,25 @@ export default function FinanzasPage() {
 
     let error
     if (editingSaleId) {
+      const { data: originalSale } = await supabase.from('sales').select('product_id, size').eq('id', editingSaleId).maybeSingle()
+      if (originalSale?.size && (originalSale.product_id !== payload.product_id || originalSale.size !== payload.size)) {
+        await incrementStock(originalSale.product_id, originalSale.size)
+      }
+      if (payload.size && originalSale?.size !== payload.size) {
+        const ok = await decrementStock(payload.product_id, payload.size)
+        if (!ok) { alert('Sin stock disponible para esa talla'); setSaving(false); return }
+      }
       ({ error } = await supabase.from('sales').update(payload).eq('id', editingSaleId))
     } else {
+      if (payload.size) {
+        const ok = await decrementStock(payload.product_id, payload.size)
+        if (!ok) { alert('Sin stock disponible para esa talla'); setSaving(false); return }
+      }
       ({ error } = await supabase.from('sales').insert([payload]))
     }
 
     if (error) {
+      if (!editingSaleId && payload.size) await incrementStock(payload.product_id, payload.size)
       alert('Error: ' + error.message)
       setSaving(false)
       return
@@ -187,6 +227,7 @@ export default function FinanzasPage() {
     setShowForm(false)
     setSaving(false)
     fetchSales()
+    fetchProducts()
   }
 
   const handleWholesaleSubmit = async (e) => {
@@ -240,8 +281,11 @@ export default function FinanzasPage() {
 
   const confirmDelete = async () => {
     if (deleteModal.type === 'sale') {
+      const { data: sale } = await supabase.from('sales').select('product_id, size').eq('id', deleteModal.id).maybeSingle()
+      if (sale) await incrementStock(sale.product_id, sale.size)
       await supabase.from('sales').delete().eq('id', deleteModal.id)
       fetchSales()
+      fetchProducts()
     } else {
       await supabase.from('wholesale_orders').delete().eq('id', deleteModal.id)
       fetchWholesaleOrders()

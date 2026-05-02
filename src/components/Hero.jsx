@@ -7,12 +7,30 @@ export default function Hero() {
   const [mobileState, setMobileState] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false)
   const [callouts, setCallouts] = useState(null)
   const [loaded, setLoaded] = useState(false)
+  const [heroImages, setHeroImages] = useState({ desktop: [], mobile: [] })
+  const [currentSlide, setCurrentSlide] = useState(0)
   const drawCalloutsRef = useRef(null)
+  const intervalRef = useRef(null)
 
   useEffect(() => {
     const onResize = () => setMobileState(window.innerWidth < 768)
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  useEffect(() => {
+    const fetchHeroImages = async () => {
+      const { data } = await supabase
+        .from('hero_images')
+        .select('*')
+        .order('position', { ascending: true })
+      if (data) {
+        const images = { desktop: [], mobile: [] }
+        data.forEach(row => { images[row.type].push(row.url) })
+        setHeroImages(images)
+      }
+    }
+    fetchHeroImages()
   }, [])
 
   useEffect(() => {
@@ -28,19 +46,22 @@ export default function Hero() {
     fetchCallouts()
   }, [mobileState])
 
-  const fallbackCallouts = mobileState ? [
-    { pointX: 52.9, pointY: 67.5, boxOffsetX: 107, boxOffsetY: -145 },
-    { pointX: 46.9, pointY: 56.9, boxOffsetX: -93, boxOffsetY: -130 },
-    { pointX: 47.8, pointY: 91.2, boxOffsetX: -106, boxOffsetY: -143 },
-  ] : [
-    { pointX: 52.9, pointY: 67.5, boxOffsetX: 165, boxOffsetY: -86 },
-    { pointX: 46.9, pointY: 56.9, boxOffsetX: -151, boxOffsetY: -92 },
-    { pointX: 47.8, pointY: 91.2, boxOffsetX: -142, boxOffsetY: -77 },
-  ]
+  const activeCallouts = loaded ? callouts : []
 
-  const activeCallouts = loaded
-    ? (callouts.length > 0 ? callouts : fallbackCallouts)
-    : []
+  const slides = mobileState ? heroImages.mobile : heroImages.desktop
+
+  useEffect(() => {
+    setCurrentSlide(0)
+  }, [mobileState])
+
+  useEffect(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current)
+    if (slides.length <= 1) return
+    intervalRef.current = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % slides.length)
+    }, 5000)
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
+  }, [slides.length])
 
   const drawLines = useCallback(() => {
     const canvas = canvasRef.current
@@ -99,8 +120,30 @@ export default function Hero() {
 
   return (
     <section ref={containerRef} className="relative w-full h-svh overflow-hidden">
-      <img src="/hero.png" alt="Hero" className="absolute inset-0 w-full h-full object-cover" style={{ zIndex: 1 }} />
-      <img src="/bg2.png" alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" style={{ zIndex: 2 }} />
+      {slides.length > 0 && (
+        <>
+          {slides.map((src, i) => (
+            <img
+              key={i}
+              src={src}
+              alt={`Hero ${i + 1}`}
+              className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
+              style={{ zIndex: 1, opacity: i === currentSlide ? 1 : 0 }}
+            />
+          ))}
+          {slides.length > 1 && (
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2" style={{ zIndex: 10 }}>
+              {slides.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentSlide(i)}
+                  className={`w-2.5 h-2.5 rounded-full transition-all ${i === currentSlide ? 'bg-white scale-125' : 'bg-white/40 hover:bg-white/60'}`}
+                />
+              ))}
+            </div>
+          )}
+        </>
+      )}
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" style={{ zIndex: 3 }} />
 
       {activeCallouts.map(callout => {
