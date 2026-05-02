@@ -8,6 +8,19 @@ const formatCurrency = (value) => {
   return '$' + Number(value).toLocaleString('es-CO')
 }
 
+const SIZE_ORDER = { XS: 0, S: 1, M: 2, L: 3, XL: 4, '2XL': 5, XXL: 5, '3XL': 6, XXXL: 6, UNITALLA: 7, U: 7 }
+
+const sortSizes = (a, b) => {
+  const keyA = a.toUpperCase().trim(), keyB = b.toUpperCase().trim()
+  const oA = SIZE_ORDER[keyA], oB = SIZE_ORDER[keyB]
+  if (oA !== undefined && oB !== undefined) return oA - oB
+  if (oA !== undefined) return -1
+  if (oB !== undefined) return 1
+  const nA = parseFloat(a), nB = parseFloat(b)
+  if (!isNaN(nA) && !isNaN(nB)) return nA - nB
+  return a.localeCompare(b)
+}
+
 export default function Dashboard() {
   const [stats, setStats] = useState({
     products: 0,
@@ -192,11 +205,7 @@ export default function Dashboard() {
                     {expandedCats[cat.id] && (
                       <div className="px-4 sm:px-6 pb-4">
                         {(() => {
-                          const allSizes = [...new Set(cat.products.flatMap(p => (p.product_sizes || []).map(ps => ps.size)))].sort((a, b) => {
-                            const na = parseFloat(a), nb = parseFloat(b)
-                            if (!isNaN(na) && !isNaN(nb)) return na - nb
-                            return a.localeCompare(b)
-                          })
+                          const allSizes = [...new Set(cat.products.flatMap(p => (p.product_sizes || []).map(ps => ps.size)))].sort(sortSizes)
                           const activeFilter = sizeFilter[cat.id] || null
                           const filtered = activeFilter
                             ? cat.products.filter(p => (p.product_sizes || []).some(ps => ps.size === activeFilter && ps.stock > 0))
@@ -264,11 +273,7 @@ export default function Dashboard() {
                                               <span className="text-gray-400 text-xs">Sin tallas</span>
                                             ) : (
                                               <div className="flex flex-wrap gap-1">
-                                                {sizes.sort((a, b) => {
-                                                  const na = parseFloat(a.size), nb = parseFloat(b.size)
-                                                  if (!isNaN(na) && !isNaN(nb)) return na - nb
-                                                  return a.size.localeCompare(b.size)
-                                                }).map(ps => (
+                                                {sizes.sort((a, b) => sortSizes(a.size, b.size)).map(ps => (
                                                   <span
                                                     key={ps.size}
                                                     className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
