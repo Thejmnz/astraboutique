@@ -24,6 +24,7 @@ export default function EditProduct() {
     name: '',
     price: '',
     costPrice: '',
+    code: '',
     colorIds: [],
     categoryId: '',
     description: '',
@@ -101,6 +102,7 @@ export default function EditProduct() {
       name: data.name || '',
       price: data.price || '',
       costPrice: data.cost_price || '',
+      code: data.code || '',
       colorIds,
       categoryId: data.category_id || '',
       description: data.description || '',
@@ -358,6 +360,7 @@ export default function EditProduct() {
         slug,
         price: parseInt(formData.price),
         cost_price: parseInt(formData.costPrice) || null,
+        code: formData.code || null,
         category_id: formData.categoryId || null,
         description: formData.description,
         images: formData.images,
@@ -556,6 +559,38 @@ export default function EditProduct() {
                     className="w-full border border-gray-200 rounded-md py-2.5 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
                     required
                   />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Código</label>
+                  <input
+                    type="text"
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                    className="w-full border border-gray-200 rounded-md py-2.5 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                    placeholder="Ej: AB-001"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Precio de compra (COP)</label>
+                  <input
+                    type="number"
+                    value={formData.costPrice}
+                    onChange={(e) => setFormData({ ...formData, costPrice: e.target.value })}
+                    className="w-full border border-gray-200 rounded-md py-2.5 px-3 focus:ring-1 focus:ring-primary focus:outline-none"
+                    placeholder="Lo que te costó el producto"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Utilidad</label>
+                  <div className="w-full border border-gray-200 rounded-md py-2.5 px-3 bg-gray-50 text-sm font-medium">
+                    {formData.price && formData.costPrice
+                      ? `$${(parseInt(formData.price) - parseInt(formData.costPrice)).toLocaleString('es-CO')}`
+                      : '-'
+                    }
+                  </div>
                 </div>
               </div>
 

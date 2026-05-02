@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import AdminLayout from './AdminLayout'
 import { Plus, Trash2, X, TrendingUp, DollarSign, ShoppingCart, Search, PackageOpen, Minus, Pencil, ImagePlus, XCircle } from 'lucide-react'
@@ -7,6 +8,7 @@ import ConfirmModal from '../../components/ConfirmModal'
 const fmt = (v) => '$' + Number(v).toLocaleString('es-CO')
 
 export default function FinanzasPage() {
+  const location = useLocation()
   const [tab, setTab] = useState('ventas')
   const [sales, setSales] = useState([])
   const [wholesaleOrders, setWholesaleOrders] = useState([])
@@ -57,7 +59,25 @@ export default function FinanzasPage() {
   useEffect(() => {
     fetchSales()
     fetchWholesaleOrders()
-    fetchProducts()
+    fetchProducts().then(() => {
+      if (location.state?.product) {
+        const p = location.state.product
+        const sizes = p.product_sizes || []
+        const singleSize = sizes.length === 1 ? sizes[0].size : ''
+        setFormData({
+          product_id: p.id,
+          size: singleSize,
+          customer_name: '',
+          sale_price: (p.on_sale && p.sale_price ? p.sale_price : p.price)?.toString() || '',
+          cost_price: p.cost_price?.toString() || '',
+          payment_status: 'pending',
+          notes: '',
+          receipt_url: ''
+        })
+        setShowForm(true)
+        window.history.replaceState({}, '')
+      }
+    })
   }, [])
 
   useEffect(() => {

@@ -268,12 +268,21 @@ export default function ProductsList() {
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
                           {view === 'active' && (
-                            <button
-                              onClick={() => navigate(`/admin/productos/editar/${product.id}`)}
-                              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                            >
-                              <Edit size={18} />
-                            </button>
+                            <>
+                              <button
+                                onClick={() => navigate('/admin/finanzas', { state: { product: { id: product.id, name: product.name, price: product.price, cost_price: product.cost_price, product_sizes: product.product_sizes } } })}
+                                className="p-2 text-green-600 hover:bg-green-50 rounded-md transition-colors font-bold"
+                                title="Registrar venta"
+                              >
+                                $
+                              </button>
+                              <button
+                                onClick={() => navigate(`/admin/productos/editar/${product.id}`)}
+                                className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                              >
+                                <Edit size={18} />
+                              </button>
+                            </>
                           )}
                           <button
                             onClick={() => handleArchive(product.id)}
@@ -333,9 +342,18 @@ export default function ProductsList() {
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
                       {view === 'active' && (
-                        <button onClick={() => navigate(`/admin/productos/editar/${product.id}`)} className="p-1.5 text-gray-400 hover:text-blue-600">
-                          <Edit size={16} />
-                        </button>
+                        <>
+                          <button
+                            onClick={() => navigate('/admin/finanzas', { state: { product: { id: product.id, name: product.name, price: product.price, cost_price: product.cost_price, product_sizes: product.product_sizes } } })}
+                            className="p-1.5 text-green-600 font-bold"
+                            title="Registrar venta"
+                          >
+                            $
+                          </button>
+                          <button onClick={() => navigate(`/admin/productos/editar/${product.id}`)} className="p-1.5 text-gray-400 hover:text-blue-600">
+                            <Edit size={16} />
+                          </button>
+                        </>
                       )}
                       <button
                         onClick={() => handleArchive(product.id)}
