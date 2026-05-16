@@ -26,6 +26,7 @@ export default function FinanzasPage() {
   const [formData, setFormData] = useState({
     product_id: '',
     size: '',
+    color_id: '',
     customer_name: '',
     sale_price: '',
     cost_price: '',
@@ -63,10 +64,11 @@ export default function FinanzasPage() {
       if (location.state?.product) {
         const p = location.state.product
         const sizes = p.product_sizes || []
-        const singleSize = sizes.length === 1 ? sizes[0].size : ''
+        const singleSize = sizes.length === 1 ? sizes[0].id : ''
         setFormData({
           product_id: p.id,
           size: singleSize,
+          color_id: '',
           customer_name: '',
           sale_price: (p.on_sale && p.sale_price ? p.sale_price : p.price)?.toString() || '',
           cost_price: p.cost_price?.toString() || '',
@@ -96,7 +98,7 @@ export default function FinanzasPage() {
   const fetchProducts = async () => {
     const { data } = await supabase
       .from('products')
-      .select('id, name, cost_price, price, images, product_sizes(*)')
+      .select('id, name, cost_price, price, images, product_sizes(*), product_colors(colors(*))')
       .order('name')
     setProducts(data || [])
   }
@@ -120,29 +122,27 @@ export default function FinanzasPage() {
 
   const selectedProduct = products.find(p => p.id === formData.product_id)
   const availableSizes = selectedProduct?.product_sizes || []
+  const productColors = selectedProduct?.product_colors?.map(pc => pc.colors).filter(Boolean) || []
+  const getColorName = (colorId) => productColors.find(c => c.id === colorId)?.name || ''
 
-  const decrementStock = async (productId, size) => {
-    if (!productId || !size) return
+  const decrementStock = async (productSizeId) => {
+    if (!productSizeId) return
     const { data: ps } = await supabase
       .from('product_sizes')
       .select('id, stock')
-      .eq('product_id', productId)
-      .eq('size', size)
-      .limit(1)
+      .eq('id', productSizeId)
       .maybeSingle()
     if (!ps || ps.stock <= 0) return false
     await supabase.from('product_sizes').update({ stock: ps.stock - 1 }).eq('id', ps.id)
     return true
   }
 
-  const incrementStock = async (productId, size) => {
-    if (!productId || !size) return
+  const incrementStock = async (productSizeId) => {
+    if (!productSizeId) return
     const { data: ps } = await supabase
       .from('product_sizes')
       .select('id, stock')
-      .eq('product_id', productId)
-      .eq('size', size)
-      .limit(1)
+      .eq('id', productSizeId)
       .maybeSingle()
     if (!ps) return
     await supabase.from('product_sizes').update({ stock: ps.stock + 1 }).eq('id', ps.id)
@@ -202,11 +202,17 @@ export default function FinanzasPage() {
 
     setSaving(true)
     const profit = parseInt(formData.sale_price || 0) - parseInt(formData.cost_price || 0)
+    const selectedSizeRow = availableSizes.find(ps => ps.id === formData.size)
+    const sizeLabel = selectedSizeRow
+      ? (getColorName(selectedSizeRow.color_id)
+          ? `${selectedSizeRow.size} - ${getColorName(selectedSizeRow.color_id)}`
+          : selectedSizeRow.size)
+      : formData.size
 
     const payload = {
       product_id: formData.product_id,
       product_name: selectedProduct?.name || '',
-      size: formData.size || null,
+      size: formData.size ? sizeLabel : null,
       customer_name: formData.customer_name || null,
       sale_price: parseInt(formData.sale_price),
       cost_price: parseInt(formData.cost_price || 0),
@@ -220,29 +226,29 @@ export default function FinanzasPage() {
     if (editingSaleId) {
       const { data: originalSale } = await supabase.from('sales').select('product_id, size').eq('id', editingSaleId).maybeSingle()
       if (originalSale?.size && (originalSale.product_id !== payload.product_id || originalSale.size !== payload.size)) {
-        await incrementStock(originalSale.product_id, originalSale.size)
+        await incrementStock(originalSale.size)
       }
       if (payload.size && originalSale?.size !== payload.size) {
-        const ok = await decrementStock(payload.product_id, payload.size)
+        const ok = await decrementStock(formData.size)
         if (!ok) { alert('Sin stock disponible para esa talla'); setSaving(false); return }
       }
       ({ error } = await supabase.from('sales').update(payload).eq('id', editingSaleId))
     } else {
-      if (payload.size) {
-        const ok = await decrementStock(payload.product_id, payload.size)
+      if (formData.size) {
+        const ok = await decrementStock(formData.size)
         if (!ok) { alert('Sin stock disponible para esa talla'); setSaving(false); return }
       }
       ({ error } = await supabase.from('sales').insert([payload]))
     }
 
     if (error) {
-      if (!editingSaleId && payload.size) await incrementStock(payload.product_id, payload.size)
+      if (!editingSaleId && formData.size) await incrementStock(formData.size)
       alert('Error: ' + error.message)
       setSaving(false)
       return
     }
 
-    setFormData({ product_id: '', size: '', customer_name: '', sale_price: '', cost_price: '', payment_status: 'pending', notes: '', receipt_url: '' })
+    setFormData({ product_id: '', size: '', color_id: '', customer_name: '', sale_price: '', cost_price: '', payment_status: 'pending', notes: '', receipt_url: '' })
     setEditingSaleId(null)
     setShowForm(false)
     setSaving(false)
@@ -302,7 +308,15 @@ export default function FinanzasPage() {
   const confirmDelete = async () => {
     if (deleteModal.type === 'sale') {
       const { data: sale } = await supabase.from('sales').select('product_id, size').eq('id', deleteModal.id).maybeSingle()
-      if (sale) await incrementStock(sale.product_id, sale.size)
+      if (sale?.size) {
+        const matchPs = products.find(p => p.id === sale.product_id)?.product_sizes
+          ?.find(ps => {
+            const cn = getColorName(ps.color_id)
+            const label = cn ? `${ps.size} - ${cn}` : ps.size
+            return label === sale.size || ps.size === sale.size
+          })
+        if (matchPs) await incrementStock(matchPs.id)
+      }
       await supabase.from('sales').delete().eq('id', deleteModal.id)
       fetchSales()
       fetchProducts()
@@ -314,10 +328,18 @@ export default function FinanzasPage() {
   }
 
   const handleEditSale = (sale) => {
+    const saleProduct = products.find(p => p.id === sale.product_id)
+    const colorsMap = saleProduct?.product_colors?.map(pc => pc.colors).filter(Boolean) || []
+    const matchPs = saleProduct?.product_sizes?.find(ps => {
+      const cn = colorsMap.find(c => c.id === ps.color_id)?.name || ''
+      const label = cn ? `${ps.size} - ${cn}` : ps.size
+      return label === sale.size || ps.size === sale.size
+    })
     setEditingSaleId(sale.id)
     setFormData({
       product_id: sale.product_id || '',
-      size: sale.size || '',
+      size: matchPs?.id || '',
+      color_id: '',
       customer_name: sale.customer_name || '',
       sale_price: sale.sale_price?.toString() || '',
       cost_price: sale.cost_price?.toString() || '',
@@ -433,7 +455,7 @@ export default function FinanzasPage() {
               <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 mb-8">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-lg font-medium">{editingSaleId ? 'Editar Venta' : 'Registrar Venta'}</h2>
-                  <button onClick={() => { setShowForm(false); setEditingSaleId(null); setFormData({ product_id: '', size: '', customer_name: '', sale_price: '', cost_price: '', payment_status: 'pending', notes: '', receipt_url: '' }) }} className="text-gray-400 hover:text-gray-600">
+                  <button onClick={() => { setShowForm(false); setEditingSaleId(null); setFormData({ product_id: '', size: '', color_id: '', customer_name: '', sale_price: '', cost_price: '', payment_status: 'pending', notes: '', receipt_url: '' }) }} className="text-gray-400 hover:text-gray-600">
                     <X size={20} />
                   </button>
                 </div>
@@ -520,11 +542,15 @@ export default function FinanzasPage() {
                         disabled={availableSizes.length === 0}
                       >
                         <option value="">Sin talla</option>
-                        {availableSizes.map(ps => (
-                          <option key={ps.id} value={ps.size}>
-                            {ps.size} (Stock: {ps.stock})
-                          </option>
-                        ))}
+                        {availableSizes.map(ps => {
+                          const colorName = getColorName(ps.color_id)
+                          const label = colorName ? `${ps.size} - ${colorName} (Stock: ${ps.stock})` : `${ps.size} (Stock: ${ps.stock})`
+                          return (
+                            <option key={ps.id} value={ps.id}>
+                              {label}
+                            </option>
+                          )
+                        })}
                       </select>
                     </div>
                   </div>
@@ -662,7 +688,7 @@ export default function FinanzasPage() {
                     >
                       {saving ? 'Guardando...' : editingSaleId ? 'Guardar cambios' : 'Registrar venta'}
                     </button>
-                    <button type="button" onClick={() => { setShowForm(false); setEditingSaleId(null); setFormData({ product_id: '', size: '', customer_name: '', sale_price: '', cost_price: '', payment_status: 'pending', notes: '', receipt_url: '' }) }} className="px-6 py-2.5 rounded-md font-medium text-gray-600 hover:bg-gray-100 transition-colors">
+                    <button type="button" onClick={() => { setShowForm(false); setEditingSaleId(null); setFormData({ product_id: '', size: '', color_id: '', customer_name: '', sale_price: '', cost_price: '', payment_status: 'pending', notes: '', receipt_url: '' }) }} className="px-6 py-2.5 rounded-md font-medium text-gray-600 hover:bg-gray-100 transition-colors">
                       Cancelar
                     </button>
                   </div>
